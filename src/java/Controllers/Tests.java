@@ -55,12 +55,12 @@ public class Tests extends HttpServlet {
             ruleList.add(new Rule(FeatureEnum.Price, "Price head", "Price left", "date right", "date tail"));
             ruleList.add(new Rule(FeatureEnum.Postcode, "", "", "", ""));
             
-            result += wrapperDB.addRules("testDomain", ruleList) + ",";
-            
-            ruleList = wrapperDB.getRules("doesntExist");
-            result += (ruleList.size() == 0) + ",";
-            
-            ruleList = wrapperDB.getRules("testDomain");
+//            result += wrapperDB.addRules("testDomain", ruleList) + ",";
+//            
+//            ruleList = wrapperDB.getRules("doesntExist");
+//            result += (ruleList.size() == 0) + ",";
+//            
+//            ruleList = wrapperDB.getRules("testDomain");
             result += (ruleList.size() != 0) + ",";
             for (int i = 0; i < ruleList.size(); i++) {
                 result += ruleList.get(i).toString() + ",";
