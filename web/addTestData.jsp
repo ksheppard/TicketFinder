@@ -1,7 +1,7 @@
 <%-- 
-    Document   : addTrainingData
-    Created on : 17-Jan-2016, 21:05:09
-    Author     : Kyran
+    Document   : addTestData
+    Created on : 29-Jan-2016, 17:13:56
+    Author     : Hannah
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -9,12 +9,11 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Add training data</title>
+        <title>Add Test Data</title>
     </head>
     <body>
-        <h1>Add training data!</h1>
-
-        <form action='train.do' method='POST' enctype="multipart/form-data">
+        <h1>Add Test Data</h1>
+        <form action='test.do' method='POST' enctype="multipart/form-data">
             <input type='file' name='file'><br><br>
             <input type='submit' name='upload_btn' value='upload'>
         </form>
