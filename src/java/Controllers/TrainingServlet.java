@@ -39,7 +39,6 @@ public class TrainingServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             
             Part filePart = request.getPart("file"); // Retrieves <input type="file" name="file">
@@ -49,9 +48,6 @@ public class TrainingServlet extends HttpServlet {
             WrapperHelper wh = new WrapperHelper();
             wh.trainSystem(fileContent);
             
-            
-            
-        }
         
     }
 
