@@ -15,8 +15,8 @@
         <h1>Admin home</h1>
         <br>
         <ul>
-            <li><a href="addTrainingData.jsp">Add Training data</a></li>
-            <li><a href="addTestData.jsp">Test System</a></li>
+            <li><a href="AdminPages/addTrainingData.jsp">Add Training data</a></li>
+            <li><a href="AdminPages/addTestData.jsp">Test System</a></li>
             <li><a href="">View Feedback</a></li>
         </ul>
     </body>

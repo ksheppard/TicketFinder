@@ -14,7 +14,7 @@
     <body>
         <h1>Add training data!</h1>
 
-        <form action='train.do' method='POST' enctype="multipart/form-data">
+        <form action='AddTrainingData.do' method='POST' enctype="multipart/form-data">
             <input type='file' name='file'><br><br>
             <input type='submit' name='upload_btn' value='upload'>
         </form>

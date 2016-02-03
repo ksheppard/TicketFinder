@@ -27,6 +27,14 @@
         <servlet-name>Tests</servlet-name>
         <servlet-class>Controllers.Tests</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AddTrainingData</servlet-name>
+        <servlet-class>Controllers.AddTrainingData</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TestDataFromDB</servlet-name>
+        <servlet-class>Controllers.TestDataFromDB</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TestingServlet</servlet-name>
         <url-pattern>/test.do</url-pattern>
@@ -38,6 +46,14 @@
     <servlet-mapping>
         <servlet-name>Tests</servlet-name>
         <url-pattern>/tests.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AddTrainingData</servlet-name>
+        <url-pattern>/AddTrainingData.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TestDataFromDB</servlet-name>
+        <url-pattern>/TestDataFromDB.do</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
