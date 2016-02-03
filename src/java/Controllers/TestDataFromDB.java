@@ -6,23 +6,21 @@
 package Controllers;
 
 import Models.WrapperHelper;
+import SQL.TestDataDB;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 
 /**
  *
  * @author Kyran
  */
-
-public class TrainingServlet extends HttpServlet {
+public class TestDataFromDB extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,17 +31,19 @@ public class TrainingServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    
-    
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-            /* TODO output your page here. You may use following sample code. */
-            
-            WrapperHelper wh = (WrapperHelper) request.getServletContext().getAttribute("trainingWrapperHelper");
-            wh.trainSystem();
-            
         
+        //do exactly as would with a file but instead of reading the file, get from DB
+        String domain = request.getAttribute("domain").toString();
+        
+        WrapperHelper trainingWrapperHelper = new WrapperHelper();
+        TestDataDB testDataDB = new TestDataDB((Connection) request.getServletContext().getAttribute("connection"));
+        trainingWrapperHelper.addFromDB(testDataDB.getTestData(domain));
+        request.getServletContext().setAttribute("trainingWrapperHelper", trainingWrapperHelper);
+
+        RequestDispatcher view = request.getRequestDispatcher("AdminPages/trainingDataConfirmation.jsp");
+        view.forward(request, response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

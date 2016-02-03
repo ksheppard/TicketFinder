@@ -5,6 +5,7 @@
  */
 package Models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +23,16 @@ public class Wrapper {
         this.head = head;
         this.tail = tail;
         this.ruleList = ruleList;
+    }
+    
+    public Wrapper(String domain) {
+        this.domain = domain;
+        this.ruleList = new ArrayList<Rule>(); //init rulelist so can be added to
+    }
+    
+    public void addRule(Rule rule){
+        if(ruleList == null)ruleList = new ArrayList<Rule>(); //shouldn't be null be check to be safe
+        ruleList.add(rule);
     }
 
     public String getDomain() {

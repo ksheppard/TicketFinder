@@ -29,21 +29,25 @@ public class WrapperHelper {
 
     String html;
     private final int NUM_OF_CHARS = 150;
+    private final char[] CHARS_TO_CHECK = {'\"', '\'', '>', '<', ')', '(', ']', '['};
+    
+    private List<SiteFeatures> trainingData;
     
     public WrapperHelper() {
     }
+    
+    // <editor-fold desc="Training">
 
-    public void trainSystem(InputStream inputStream) {
-        List<SiteFeatures> siteList = getDataFromFile(inputStream);
+    public void trainSystem() {
         List<Wrapper> wrapperList = new ArrayList<Wrapper>();
-        for (int i = 0; i < siteList.size(); i++) {
+        for (int i = 0; i < trainingData.size(); i++) {
             //wrapperList.add(generateWrapper(siteList.get(i)));
-            wrapperList.add(generateFromText(siteList.get(i)));
+            wrapperList.add(generateFromText(trainingData.get(i)));
         }
-       // Wrapper wrapper = aggregateWrappers(wrapperList);
+        Wrapper wrapper = aggregateWrappers(wrapperList);
         //save into db at end
     }
-
+    
 //    private Wrapper generateWrapper(SiteFeatures feature) {
 //        Wrapper wrapper = null;
 //        List<Rule> ruleList = new ArrayList<Rule>();
@@ -75,6 +79,8 @@ public class WrapperHelper {
 //        return wrapper;
 //    }
 
+    // <editor-fold desc="Generate Wrapper">
+    
     private Wrapper generateFromText(SiteFeatures feature) {
         //make so isnt caps sensitive? aka convert everything to lower
         Wrapper wrapper = null;
@@ -83,8 +89,8 @@ public class WrapperHelper {
             Document doc = Jsoup.connect(feature.getUrl()).get();
             html = doc.body().toString();
             int length = html.length();
-            wrapper = createWrapperFromSearch(getDataFromFile(feature));
-
+            wrapper = createWrapperFromSearch(searchFileForFeatures(feature), feature.getDomain());
+            System.out.println("");
         } catch (IOException ex) {
             Logger.getLogger(WrapperHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -92,7 +98,7 @@ public class WrapperHelper {
         return wrapper;
     }
 
-    private List<WrapperSearchResult> getDataFromFile(SiteFeatures feature) {
+    private List<WrapperSearchResult> searchFileForFeatures(SiteFeatures feature) {
         List<WrapperSearchResult> searchList = new ArrayList<WrapperSearchResult>();
         Iterator it = feature.getFeatureMap().entrySet().iterator();
         
@@ -117,16 +123,29 @@ public class WrapperHelper {
         return searchList;
     }
     
-    private Wrapper createWrapperFromSearch(List<WrapperSearchResult> searchList){
-        Wrapper wrapper = null;
+    private Wrapper createWrapperFromSearch(List<WrapperSearchResult> searchList, String domain){
+        Wrapper wrapper = new Wrapper(domain);
+        int min = -1;
+        int max = -1;
         
         for (int i = 0; i < searchList.size(); i++) {
             WrapperSearchResult searchResult = searchList.get(i);
             Rule rule = new Rule(searchResult.getFeature());
             rule.setLeft(setLeft(searchResult, searchList, i));
-            rule.setRight(setLeft(searchResult, searchList, i));
+            rule.setRight(setRight(searchResult, searchList, i));
+            //set open and close here if is valid
+            wrapper.addRule(rule);
             
+            
+            //set min and max to be used for getting head and tail
+            if(min == -1 || min > searchResult.getStartIndex() - 1) min = searchResult.getStartIndex() - 1; //-1 so that it is set before the beginning of the feature
+            if(max == -1 || max < searchResult.getStartIndex() + searchResult.getValue().length()) max = searchResult.getStartIndex() + searchResult.getValue().length();
         }
+        
+        //use min and max to set head and tail here
+        wrapper.setHead(html.substring(min - 1000 > 0 ? min - 1000 : 0 , min)); //need extra validation to check if is above 0?
+        wrapper.setTail(html.substring(max, max + 1000 > html.length() ? html.length() : max + 1000));//need extra validation to check if doesnt exceed length of string 0?
+        //use 1000 as needs much more wiggle room to try and find common ground with other sites
         
         return wrapper;
     }
@@ -146,52 +165,137 @@ public class WrapperHelper {
         return right;
     }
 
-    private Rule createRule(FeatureEnum feature, String value, Element element) {
-
-        Rule rule = new Rule(feature);
-        int index = element.toString().indexOf(value);
-        rule.setLeft(element.toString().substring(0, index - 1));
-        rule.setLeft(element.toString().substring(index + value.length()));
-        //ignore open and close for now
-
-        return rule;
+    // </editor-fold>
+    // <editor-fold desc="Wrapper aggregation">
+    private Wrapper aggregateWrappers(List<Wrapper> wrapperList) {
+        //after have aggregated all those that can, will 
+        
+        List<String> headList = new ArrayList<String>();
+        List<String> tailList = new ArrayList<String>();
+        
+        for (int i = 0; i < wrapperList.size(); i++) {
+            headList.add(wrapperList.get(i).getHead());
+            tailList.add(wrapperList.get(i).getTail());
+        }
+        
+        
+        //STUCK HERE
+        int index = 0;
+        
+        while(true){
+            for (FeatureEnum feat : FeatureEnum.values()) {
+                for (int i = 0; i < 10; i++) {
+                    
+                }
+            }
+            break;
+        }
+        
+        //aggregate head and tail
+        
+        //do rules here
+        
+        
+        
+        // create new wrapper here
+        return null;
     }
 
-//    private Elements filterSearchElements(Elements searchElements, String val) {
-////        Elements filteredElements = new Elements();
-////        for (int i = 0; i < searchElements.size(); i++) {
-////            //want to put all elements in to the next stage if possible as aggregation stage can weed out the ones that wont work
-////            Element element = searchElements.get(i);
-////            String test = element.text();
-////            String id = element.id();
-////            if(element.text().contains(String.format(">%s<", val))){
-////                System.out.println("");
-////            }
-////            
-////        }
-////        filteredElements.add(null);
-//
-////        return filteredElements;
-//        return searchElements;
-//    }
-//
-//    private Wrapper aggregateWrappers(List<Wrapper> wrapperList) {
-//        //put collection of wrapper with mess of rules in here and then will go from there
-//        return null;
-//    }
-//
-//    private List<Rule> aggregateRuleList(List<Rule> ruleList) {
-//        // can have multiple potential rules for same feature in same domain going in here
-//        //this will try and get the rule that matches all and tests, if doesnt work could potentially move to next set of rules for that feature 
-//        //(this is where web page contains same bit of info in different places)
-//        return null;
-//    }
-
+    private List<Rule> aggregateRuleList(List<Rule> ruleList) {
+        // can have multiple potential rules for same feature in same domain going in here
+        //this will try and get the rule that matches all and tests, if doesnt work could potentially move to next set of rules for that feature 
+        //(this is where web page contains same bit of info in different places)
+        return null;
+    }
+    // </editor-fold>
+    // <editor-fold desc="String comparison">
+    
+    public String compareStrings(List<String> stringList){
+        //this is where the comparison will take place
+        //will find a common rule that can be applied to all
+        //will do this for all rules
+        //take into accoutn that brackets, quotes and < etc will be in pairs so can use this logic when stuff stops matching
+        
+        return "";
+    }
+    
+    public String compareLR(List<String> pStringList, boolean isReverse){
+        //this compares strings that will be in the used for the left or right
+        //if is going to be for the left, need to reverse the string and then iterate normally
+        //because want to get the closest possible
+        List<String> stringList = pStringList;
+        String aggregated = "";
+        
+        if(isReverse){
+            for (int i = 0; i < stringList.size(); i++) {
+                    stringList.set(i, new StringBuilder(stringList.get(i)).reverse().toString());
+                }
+        }
+        
+        for (int i = 0; i < NUM_OF_CHARS; i++) {
+            //once add something into the aggregated string - remove from items in the string list so dont have to keep up with indexes
+            if(compareFirstChar(stringList)){
+                aggregated += stringList.get(0).charAt(0);
+                for (int j = 0; j < stringList.size(); j++) {
+                    stringList.set(i, stringList.get(i).substring(1));
+                }
+            }
+            else{
+                //if hasnt matched then have to assume that there is an interchangeable piece of info here
+                if(compareToCharArray(aggregated.charAt(aggregated.length() - 1))){
+                        for (int j = 0; j < stringList.size(); j++) {
+                    //DO THIS
+                }
+                    }
+            }
+        }
+        if(isReverse)aggregated = new StringBuilder(aggregated).reverse().toString();
+        return aggregated;
+    }
+    
+    private boolean compareToCharArray(char character){
+        for (int i = 0; i < CHARS_TO_CHECK.length; i++) {
+            if(CHARS_TO_CHECK[i] == character) return true;
+        }
+        return false;
+    }
+    
+    
+    public boolean compareFirstChar(List<String> stringList){
+        char character = stringList.get(0).charAt(0);
+        for (int i = 1; i < stringList.size(); i++) {
+            if(character != stringList.get(i).charAt(0)){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // </editor-fold>
+    // </editor-fold>
+    // <editor-fold desc="Testing ">
+    
     public void testSystem() {
 
     }
+    
+    // </editor-fold>
 
-    public List<SiteFeatures> getDataFromFile(InputStream inputStream) {
+    // <editor-fold desc="Adding Test/training data ">
+    
+    public void addFile(InputStream inputStream){
+        trainingData = readDataFromFile(inputStream);
+    }
+    
+    public List<SiteFeatures> getFile(){
+        return trainingData;
+    }
+    
+    public void addFromDB(List<SiteFeatures> siteFeatureList){
+        trainingData = siteFeatureList;
+    }
+    
+    private List<SiteFeatures> readDataFromFile(InputStream inputStream) {
         List<SiteFeatures> siteList = new ArrayList<SiteFeatures>();
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
@@ -204,5 +308,7 @@ public class WrapperHelper {
         }
         return siteList;
     }
+    
+    // </editor-fold>
 
 }
