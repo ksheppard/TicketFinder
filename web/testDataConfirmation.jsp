@@ -1,12 +1,11 @@
 <%-- 
-    Document   : trainingDataConfirmation
-    Created on : 02-Feb-2016, 23:48:40
+    Document   : testDataConfirmation
+    Created on : 03-Feb-2016, 20:34:33
     Author     : Kyran
 --%>
 
 <%@page import="Models.FeatureEnum"%>
 <%@page import="Models.SiteFeatures"%>
-<%@page import="java.util.List"%>
 <%@page import="java.util.List"%>
 <%@page import="Models.WrapperHelper"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,12 +13,12 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Confirm Training Data</title>
+        <title>JSP Page</title>
     </head>
     <body>
-        <h1>Confirm Training Data</h1>
+        <h1>Confirm Test Data</h1>
         
-        <form action="AdminPages/addTrainingData.jsp">
+        <form action="addTestData.jsp">
             <input type="submit" value="Change file">
         </form>
         <br>
