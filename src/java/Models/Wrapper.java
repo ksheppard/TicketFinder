@@ -34,6 +34,10 @@ public class Wrapper {
         if(ruleList == null)ruleList = new ArrayList<Rule>(); //shouldn't be null be check to be safe
         ruleList.add(rule);
     }
+    
+    public Rule getRule(int index){
+        return ruleList.get(index);
+    }
 
     public String getDomain() {
         return domain;

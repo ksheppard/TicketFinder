@@ -29,6 +29,7 @@ public class WrapperHelper {
 
     String html;
     private final int NUM_OF_CHARS = 150;
+    private final int HEAD_TAIL_CHARS = 1000;
     private final char[] CHARS_TO_CHECK = {'\"', '\'', '>', '<', ')', '(', ']', '['};
     
     private List<SiteFeatures> trainingData;
@@ -98,23 +99,20 @@ public class WrapperHelper {
         return wrapper;
     }
 
-    private List<WrapperSearchResult> searchFileForFeatures(SiteFeatures feature) {
+    private List<WrapperSearchResult> searchFileForFeatures(SiteFeatures siteFeature) {
         List<WrapperSearchResult> searchList = new ArrayList<WrapperSearchResult>();
-        Iterator it = feature.getFeatureMap().entrySet().iterator();
         
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            FeatureEnum featureEnum = FeatureEnum.valueOf(pair.getKey().toString());
-            String value = pair.getValue().toString();
-            if(value == "") continue;
-            it.remove(); // avoids a ConcurrentModificationException
+        //
+        for(FeatureEnum feature : FeatureEnum.values()){
+            String value = siteFeature.getFeatureMap().get(feature);
+            if(value.equals("")) continue;
             int index = 0;
             while (true) {
                 index = html.indexOf(value, index);
                 if (index == -1) {
                     break;
                 } else {
-                    searchList.add(new WrapperSearchResult(index, value, featureEnum));
+                    searchList.add(new WrapperSearchResult(index, value, feature));
                 }
                 index += value.length();
             }
@@ -143,8 +141,8 @@ public class WrapperHelper {
         }
         
         //use min and max to set head and tail here
-        wrapper.setHead(html.substring(min - 1000 > 0 ? min - 1000 : 0 , min)); //need extra validation to check if is above 0?
-        wrapper.setTail(html.substring(max, max + 1000 > html.length() ? html.length() : max + 1000));//need extra validation to check if doesnt exceed length of string 0?
+        wrapper.setHead(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0 , min)); //need extra validation to check if is above 0?
+        wrapper.setTail(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));//need extra validation to check if doesnt exceed length of string 0?
         //use 1000 as needs much more wiggle room to try and find common ground with other sites
         
         return wrapper;
@@ -170,41 +168,50 @@ public class WrapperHelper {
     private Wrapper aggregateWrappers(List<Wrapper> wrapperList) {
         //after have aggregated all those that can, will 
         
-        List<String> headList = new ArrayList<String>();
-        List<String> tailList = new ArrayList<String>();
+        List<String> tempHeadList = new ArrayList<String>();
+        List<String> tempTailList = new ArrayList<String>();
+        List<Rule> tempRuleList;
         
+        String head = null;
+        String tail = null;
+        String domain = wrapperList.get(0).getDomain();
+        List<Rule> aggregatedRuleList = new ArrayList<Rule>();
+        
+        //set up temp lists
         for (int i = 0; i < wrapperList.size(); i++) {
-            headList.add(wrapperList.get(i).getHead());
-            tailList.add(wrapperList.get(i).getTail());
+            tempHeadList.add(wrapperList.get(i).getHead());
+            tempTailList.add(wrapperList.get(i).getTail());
         }
+        //aggregate head and tail
+        head = compareLR(tempHeadList, true, HEAD_TAIL_CHARS);
+        tail = compareLR(tempTailList, true, HEAD_TAIL_CHARS);
         
-        
-        //STUCK HERE
+        //aggregate the rules
         int index = 0;
         
-        while(true){
-            for (FeatureEnum feat : FeatureEnum.values()) {
-                for (int i = 0; i < 10; i++) {
-                    
-                }
+        for (int i = 0; i < wrapperList.get(0).getRuleList().size(); i++) {
+            tempRuleList = new ArrayList<>();
+            for (int j = 0; j < wrapperList.size(); j++) {
+                tempRuleList.add(wrapperList.get(0).getRule(index));
             }
-            break;
+            //may need checks that all rules are for same rule - are they in the same order?
+            Rule aggregatedRule = aggregateRuleList(tempRuleList);
+            if(aggregatedRule != null)aggregatedRuleList.add(aggregatedRule);
+            
+            index++;
+            if(index == wrapperList.get(0).getRuleList().size()) break;
         }
         
-        //aggregate head and tail
-        
-        //do rules here
-        
-        
-        
-        // create new wrapper here
-        return null;
+        return new Wrapper(domain, head, tail, aggregatedRuleList);
     }
 
-    private List<Rule> aggregateRuleList(List<Rule> ruleList) {
+    private Rule aggregateRuleList(List<Rule> ruleList) {
         // can have multiple potential rules for same feature in same domain going in here
         //this will try and get the rule that matches all and tests, if doesnt work could potentially move to next set of rules for that feature 
         //(this is where web page contains same bit of info in different places)
+        //return null if cant create a rule for it
+        
+        
         return null;
     }
     // </editor-fold>
@@ -219,7 +226,7 @@ public class WrapperHelper {
         return "";
     }
     
-    public String compareLR(List<String> pStringList, boolean isReverse){
+    public String compareLR(List<String> pStringList, boolean isReverse, int numOfChars){
         //this compares strings that will be in the used for the left or right
         //if is going to be for the left, need to reverse the string and then iterate normally
         //because want to get the closest possible
@@ -232,7 +239,7 @@ public class WrapperHelper {
                 }
         }
         
-        for (int i = 0; i < NUM_OF_CHARS; i++) {
+        for (int i = 0; i < numOfChars; i++) {
             //once add something into the aggregated string - remove from items in the string list so dont have to keep up with indexes
             if(compareFirstChar(stringList)){
                 aggregated += stringList.get(0).charAt(0);

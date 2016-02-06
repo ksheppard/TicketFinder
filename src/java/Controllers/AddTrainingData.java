@@ -46,7 +46,7 @@ public class AddTrainingData extends HttpServlet {
         trainingWrapperHelper.addFile(fileContent);
         request.getServletContext().setAttribute("trainingWrapperHelper", trainingWrapperHelper);
 
-        RequestDispatcher view = request.getRequestDispatcher("AdminPages/trainingDataConfirmation.jsp");
+        RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
         view.forward(request, response);
 
     }
