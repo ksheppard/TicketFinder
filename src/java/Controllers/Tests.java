@@ -7,6 +7,7 @@ package Controllers;
 
 import Models.FeatureEnum;
 import Models.Rule;
+import Models.WrapperHelper;
 import SQL.WrapperDB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,6 +28,9 @@ public class Tests extends HttpServlet {
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        testWrapperHelper();
+        
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* This is to be used for any testing required aka sql testing */
@@ -37,10 +41,15 @@ public class Tests extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet Tests at " + request.getContextPath() + "</h1>");
-             out.println(testSQL(request));
+             //out.println(testSQL(request));
             out.println("</body>");
             out.println("</html>");
         }
+    }
+    
+    private void testWrapperHelper(){
+        WrapperHelper wh = new WrapperHelper();
+        wh.testMethods();
     }
     
     private String testSQL(HttpServletRequest request){
