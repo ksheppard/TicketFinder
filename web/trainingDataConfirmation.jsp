@@ -38,8 +38,7 @@
                 <th>Location</th> 
             </tr>
             <%
-                WrapperHelper wrapperHelper = (WrapperHelper) request.getServletContext().getAttribute("trainingWrapperHelper");
-                List<SiteFeatures> trainingData = wrapperHelper.getFile();
+                List<SiteFeatures> trainingData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
                 for (int i = 0; i < trainingData.size(); i++) {
                     SiteFeatures site = trainingData.get(i);
             %>

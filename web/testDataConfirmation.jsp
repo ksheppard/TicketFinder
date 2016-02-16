@@ -22,7 +22,7 @@
             <input type="submit" value="Change file">
         </form>
         <br>
-        <form action="train.do"  method='GET'>
+        <form action="test.do"  method='GET'>
             <input type="submit" value="Continue">
         </form>
         <br>
@@ -37,8 +37,7 @@
                 <th>Location</th> 
             </tr>
             <%
-                WrapperHelper wrapperHelper = (WrapperHelper) request.getServletContext().getAttribute("trainingWrapperHelper");
-                List<SiteFeatures> trainingData = wrapperHelper.getFile();
+                List<SiteFeatures> trainingData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
                 for (int i = 0; i < trainingData.size(); i++) {
                     SiteFeatures site = trainingData.get(i);
             %>
