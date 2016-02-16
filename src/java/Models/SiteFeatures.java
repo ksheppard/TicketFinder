@@ -24,13 +24,13 @@ public class SiteFeatures {
     public SiteFeatures(String line) {
         initMap();
         String[] info = line.split(",,");
-        domain = info[0];
-        url = info[1];
+        domain = info[0].trim();
+        url = info[1].trim();
 
         try {
             int i = 2;
             for (FeatureEnum feat : FeatureEnum.values()) {
-                featureMap.put(feat, info[i]);
+                featureMap.put(feat, info[i].trim());
                 i++;
                 if(i == info.length) break;
             }

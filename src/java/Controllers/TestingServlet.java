@@ -5,9 +5,13 @@
  */
 package Controllers;
 
-import Models.WrapperHelper;
+import Models.SiteFeatures;
+import Models.TestResult;
+import Models.WrapperTester;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.Connection;
+import java.util.List;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,9 +35,16 @@ public class TestingServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        WrapperHelper wh = (WrapperHelper) request.getServletContext().getAttribute("trainingWrapperHelper");
-            wh.testSystem(); //this should return a result
-            //result can then be passed to a jsp through request attribute and displayed
+        List<SiteFeatures> testData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
+        
+        WrapperTester wt = new WrapperTester((Connection) request.getServletContext().getAttribute("connection"));
+        List<TestResult> results = wt.performTests(testData);
+        
+        request.getServletContext().setAttribute("testResults", results);
+        
+        RequestDispatcher view = request.getRequestDispatcher("viewTestResults.jsp");
+        view.forward(request, response);
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

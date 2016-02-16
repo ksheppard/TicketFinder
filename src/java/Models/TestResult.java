@@ -5,10 +5,45 @@
  */
 package Models;
 
+import java.util.List;
+
 /**
  *
  * @author Kyran
  */
 public class TestResult {
+    private String domain;
+    private String url;
+    private int numFeaturesCorrect;
+    private int totalFeatures;
+    private List<TestFeature> testFeatureList;
+
+    public TestResult(String domain, String url, List<TestFeature> testFeatureList) {
+        this.domain = domain;
+        this.url = url;
+        this.testFeatureList = testFeatureList;
+        totalFeatures = testFeatureList.size();
+        
+        numFeaturesCorrect = 0;
+        for (int i = 0; i < totalFeatures; i++) {
+            if(testFeatureList.get(i).isCorrect()) numFeaturesCorrect++;
+        }
+    }
+
+    public int getNumFeaturesCorrect() {
+        return numFeaturesCorrect;
+    }
+
+    public int getTotalFeatures() {
+        return totalFeatures;
+    }
+
+    public List<TestFeature> getTestFeatureList() {
+        return testFeatureList;
+    }
+    
+    
+    
+    
     
 }

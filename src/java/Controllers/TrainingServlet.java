@@ -5,10 +5,14 @@
  */
 package Controllers;
 
+import Models.SiteFeatures;
 import Models.WrapperHelper;
+import Models.WrapperTrainer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -40,9 +44,10 @@ public class TrainingServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
             /* TODO output your page here. You may use following sample code. */
             
-            WrapperHelper wh = (WrapperHelper) request.getServletContext().getAttribute("trainingWrapperHelper");
-            wh.trainSystem();
+            List<SiteFeatures> list = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingWrapperHelper");
             
+            WrapperTrainer wt = new WrapperTrainer((Connection) request.getServletContext().getAttribute("connection"));
+            wt.trainSystem(list);
         
     }
 

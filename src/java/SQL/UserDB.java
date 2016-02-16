@@ -19,6 +19,14 @@ public class UserDB {
         this.conn = conn;
     }
     
+    public User loginUser(String email, String pass){
+        //check account exists
+        //check passowrd is valid after run through encryption
+        //return null if cantg login and handle
+        
+        return null;
+    }
+    
     public void addUser(){
         
     }

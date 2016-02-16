@@ -5,10 +5,13 @@
  */
 package Controllers;
 
+import Models.FileReader;
+import Models.SiteFeatures;
 import Models.WrapperHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -42,9 +45,9 @@ public class AddTrainingData extends HttpServlet {
         String fileName = filePart.getSubmittedFileName();
         InputStream fileContent = filePart.getInputStream();
 
-        WrapperHelper trainingWrapperHelper = new WrapperHelper();
-        trainingWrapperHelper.addFile(fileContent);
-        request.getServletContext().setAttribute("trainingWrapperHelper", trainingWrapperHelper);
+        FileReader fr = new FileReader();
+        List<SiteFeatures> list = fr.readDataFromFile(fileContent);
+        request.getServletContext().setAttribute("trainingData", list);
 
         RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
         view.forward(request, response);

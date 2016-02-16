@@ -5,11 +5,16 @@
  */
 package Models;
 
+import java.util.List;
+
 /**
  *
  * @author Hannah
  */
 public class Rule {
+    private static final int NUM_OF_CHARS = 150;
+    private static final int HEAD_TAIL_CHARS = NUM_OF_CHARS * 5;
+    
     private FeatureEnum featureName;
     private String open;
     private String close;
@@ -59,7 +64,10 @@ public class Rule {
     public void setLeft(String Left) {
         this.left = Left;
     }
-
+    
+    public void setLeft(WrapperSearchResult searchResult, List<WrapperSearchResult> searchList, String html) {
+        this.left = html.substring(searchResult.getStartIndex() - 1 - NUM_OF_CHARS, searchResult.getStartIndex() - 1);
+    }
     public String getRight() {
         return right;
     }
@@ -67,6 +75,11 @@ public class Rule {
     public void setRight(String Right) {
         this.right = Right;
     }
+    
+    public void setRight(WrapperSearchResult searchResult, List<WrapperSearchResult> searchList, String html) {
+        this.right = html.substring(searchResult.getStartIndex() + searchResult.getValue().length(), searchResult.getStartIndex() + searchResult.getValue().length() + NUM_OF_CHARS);
+    }
+
 
    
     
