@@ -76,7 +76,8 @@ public class Wrapper {
         for (int i = 0; i < ruleList.size(); i++) {
             if(ruleList.get(i).getFeatureName() == feature) filteredList.add(ruleList.get(i));
         }
-        return filteredList.size() > 0 ? filteredList : null;
+        //return filteredList.size() > 0 ? filteredList : null;
+        return filteredList;
         //return null if empty
     }
     

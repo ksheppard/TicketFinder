@@ -17,13 +17,21 @@ import java.util.Map;
  * @author Kyran
  */
 public class WrapperExecutor {
-    public final static String MODIFIER_STRING = "|#|"; //unique string combinatioin that signifies that ignore the next bit of the string
-    public final static String MODIFIER_REGEX = "[|#|]";
+    public final static String MODIFIER_STRING = "@#@"; //unique string combinatioin that signifies that ignore the next bit of the string
+    public final static String MODIFIER_REGEX = "@#@";
     
     WrapperDB wrapperDB;
     
     public WrapperExecutor(Connection conn) {
         wrapperDB = new WrapperDB(conn);
+    }
+    
+    public WrapperExecutor() {
+        //for when is used by wrapper tester
+    }
+    
+    public List<SiteFeatures> performSearch(String searchString){
+        return null;
     }
     
     // <editor-fold desc="Extracting data from wrapper ">
@@ -33,8 +41,8 @@ public class WrapperExecutor {
         int indexStart = -1;
         int indexEnd = -1;
 
-        if (!rule.getLeft().contains("|#|")) {
-            indexStart = html.indexOf(rule.getLeft()) + rule.getLeft().length();
+        if (!rule.getLeft().contains(MODIFIER_STRING)) {
+            indexStart = html.indexOf(rule.getLeft()) + rule.getLeft().length() + 1;
         } else {
             String[] split = rule.getLeft().split(MODIFIER_REGEX);
             int pointer = 0;
@@ -44,7 +52,7 @@ public class WrapperExecutor {
                 int innerPointer = pointer;
                 //could do differently to use the max length of an unknown entity eg 30 from method where set the |#| IMPORTANT IF DOESNT WORK
                 for (int j = 1; j < split.length; j++) {
-                    innerPointer = html.indexOf(split[0], innerPointer);
+                    innerPointer = html.indexOf(split[j], innerPointer);
                     if (innerPointer == -1) {
                         location = false;
                         break;
@@ -52,14 +60,14 @@ public class WrapperExecutor {
                 }
                 if (location) {
                     //have found it and can set the end index
-                    indexStart = innerPointer + split[split.length - 1].length();
+                    indexStart = innerPointer + split[split.length - 1].length() + 1;
                     break;
                 }
             }
         }
         //doesnt need to be nested as is repeated in both
         if (!rule.getRight().contains(MODIFIER_STRING)) {
-            indexEnd = html.indexOf(rule.getRight(), indexStart) - 1;
+            indexEnd = html.indexOf(rule.getRight(), indexStart);
         } else {
             String[] split = rule.getRight().split(MODIFIER_REGEX);
             int pointer = indexStart; //start here as know it cant be before and dont know the length of the item you are searching for
@@ -77,7 +85,7 @@ public class WrapperExecutor {
                 }
                 if (location) {
                     //have found it and can set the end index
-                    indexStart = innerPointer + split[split.length - 1].length();
+                    indexEnd = innerPointer + split[split.length - 1].length() - 1;
                     break;
                 }
             }

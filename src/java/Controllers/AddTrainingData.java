@@ -7,10 +7,8 @@ package Controllers;
 
 import Models.FileReader;
 import Models.SiteFeatures;
-import Models.WrapperHelper;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -49,8 +47,16 @@ public class AddTrainingData extends HttpServlet {
         List<SiteFeatures> list = fr.readDataFromFile(fileContent);
         request.getServletContext().setAttribute("trainingData", list);
 
-        RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
-        view.forward(request, response);
+        String type = request.getParameter("type");
+        if(type == "train"){
+            RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
+            view.forward(request, response);
+        }
+        else{
+            RequestDispatcher view = request.getRequestDispatcher("testDataConfirmation.jsp");
+            view.forward(request, response);
+        }
+       
 
     }
 

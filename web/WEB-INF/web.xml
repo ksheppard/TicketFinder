@@ -35,6 +35,23 @@
         <servlet-name>TestDataFromDB</servlet-name>
         <servlet-class>Controllers.TestDataFromDB</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>CreateAccount</servlet-name>
+        <servlet-class>Controllers.CreateAccount</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Login</servlet-name>
+        <servlet-class>Controllers.Login</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PerformSearch</servlet-name>
+        <servlet-class>Controllers.PerformSearch</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Logout</servlet-name>
+        <servlet-class>Controllers.Logout</servlet-class>
+    </servlet>
+ 
     <servlet-mapping>
         <servlet-name>TestingServlet</servlet-name>
         <url-pattern>/test.do</url-pattern>
@@ -55,6 +72,23 @@
         <servlet-name>TestDataFromDB</servlet-name>
         <url-pattern>/TestDataFromDB.do</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateAccount</servlet-name>
+        <url-pattern>/CreateAccount.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Login</servlet-name>
+        <url-pattern>/Login.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PerformSearch</servlet-name>
+        <url-pattern>/PerformSearch.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Logout</servlet-name>
+        <url-pattern>/Logout.do</url-pattern>
+    </servlet-mapping>
+
     <session-config>
         <session-timeout>
             30

@@ -30,6 +30,16 @@ public class TestResult {
         }
     }
 
+    public String getDomain() {
+        return domain;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+    
+    
+
     public int getNumFeaturesCorrect() {
         return numFeaturesCorrect;
     }

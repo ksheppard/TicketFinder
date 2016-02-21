@@ -8,6 +8,7 @@ package Controllers;
 import Models.SiteFeatures;
 import Models.TestResult;
 import Models.WrapperTester;
+import SQL.TestDataDB;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.List;
@@ -39,6 +40,7 @@ public class TestingServlet extends HttpServlet {
         
         WrapperTester wt = new WrapperTester((Connection) request.getServletContext().getAttribute("connection"));
         List<TestResult> results = wt.performTests(testData);
+        
         
         request.getServletContext().setAttribute("testResults", results);
         

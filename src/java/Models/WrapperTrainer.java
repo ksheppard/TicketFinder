@@ -27,7 +27,7 @@ public class WrapperTrainer {
     
     String html;
     private final int NUM_OF_CHARS = 150;
-    private final int HEAD_TAIL_CHARS = 1000;
+    private final int HEAD_TAIL_CHARS = 600;
     private final char[] CHARS_TO_CHECK = {'[', '(', '{', '<',  '\"', '\'', '>', '}', ')', ']'}; //if change need to change methods that use
     
     List<String> htmlDocs = new ArrayList<>();
@@ -50,6 +50,8 @@ public class WrapperTrainer {
             wrapperList.add(generateFromText(trainingData.get(i)));
         }
         Wrapper wrapper = aggregateWrappers(wrapperList);
+        
+        wrapperDB.addWrapper(wrapper);
         //save into db at end
     }
     
@@ -148,7 +150,6 @@ public class WrapperTrainer {
 
         //group into lists of each rule type
         //handles events where creates different number of rules for a feature
-        int minNumOfRules = minimumNumOfRules(wrapperList);
         ArrayList<ArrayList<Rule>> listOfRuleLists;
         for (FeatureEnum feature : FeatureEnum.values()) {
             listOfRuleLists = new ArrayList<ArrayList<Rule>>();
@@ -160,7 +161,7 @@ public class WrapperTrainer {
                     for (int i = 0; i < listOfRuleLists.get(0).size(); i++) {
                         tempRuleList = new ArrayList<>();
                         for (int j = 0; j < listOfRuleLists.size(); j++) {
-                            Rule rule = wrapperList.get(j).getRule(i);
+                            Rule rule = listOfRuleLists.get(j).get(i);
                             tempRuleList.add(rule);
                         }
                         Rule aggregatedRule = aggregateRuleList(tempRuleList);
@@ -179,7 +180,7 @@ public class WrapperTrainer {
                     for (int i = 0; i < minimumNumOfRules(listOfRuleLists); i++) {
                         tempRuleList = new ArrayList<>();
                         for (int j = 0; j < listOfRuleLists.size(); j++) {
-                            Rule rule = wrapperList.get(j).getRule(i);
+                            Rule rule = listOfRuleLists.get(j).get(i);
                             tempRuleList.add(rule);
                         }
                         Rule aggregatedRule = aggregateRuleList(tempRuleList);
@@ -261,6 +262,8 @@ public class WrapperTrainer {
         String open = "";
         String close = "";
 
+        if(left == "" || right == "") return null;
+        
         return new Rule(feature, open, close, left, right);
     }
     // </editor-fold>
@@ -289,6 +292,7 @@ public class WrapperTrainer {
                 }
             } else {
                 //if hasnt matched then have to assume that there is an interchangeable piece of info here
+                if(aggregated.length() == 0)return "";
                 char c = compareToCharArray(aggregated.charAt(aggregated.length() - 1), isReverse);
                 if (c != ' ' || (c = compareToCharArray(aggregated, isReverse)) != ' ') {
                     for (int j = 0; j < stringList.size(); j++) {
@@ -413,7 +417,7 @@ public class WrapperTrainer {
                 String value = wrapperTester.getValFromRule(htmlDocs.get(i), rule);
 
                 //compare to actual value
-                if (value != expectedValue) {
+                if (!value.equals(expectedValue)) {
                     return false;
                 }
             }

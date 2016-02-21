@@ -40,6 +40,17 @@ public class SiteFeatures {
 
     }
 
+    public SiteFeatures(String domain, String url) {
+        this.domain = domain;
+        this.url = url;
+    }
+    
+    
+    
+    public String getValue(FeatureEnum feature){
+        return featureMap.get(feature);
+    }
+
     public String getDomain() {
         return domain;
     }

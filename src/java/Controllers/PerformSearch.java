@@ -5,12 +5,8 @@
  */
 package Controllers;
 
-import Models.WrapperHelper;
-import SQL.TestDataDB;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Kyran
  */
-public class TestDataFromDB extends HttpServlet {
+public class PerformSearch extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,16 +29,19 @@ public class TestDataFromDB extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        //do exactly as would with a file but instead of reading the file, get from DB
-        String domain = request.getAttribute("domain").toString();
-        
-        WrapperHelper trainingWrapperHelper = new WrapperHelper();
-        TestDataDB testDataDB = new TestDataDB((Connection) request.getServletContext().getAttribute("connection"));
-        request.getServletContext().setAttribute("trainingData", testDataDB.getTestData(domain));
-
-        RequestDispatcher view = request.getRequestDispatcher("AdminPages/trainingDataConfirmation.jsp");
-        view.forward(request, response);
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet PerformSearch</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet PerformSearch at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

@@ -37,8 +37,8 @@ public class WrapperDB {
             while (rs.next()) {
                 
                 domainVal = rs.getString(1).trim();
-                head = rs.getString(2).trim();
-                tail = rs.getString(3).trim();
+                head = SQLtoString(rs.getString(2).trim());
+                tail = SQLtoString(rs.getString(3).trim());
             }
 
             state.close();
@@ -61,10 +61,10 @@ public class WrapperDB {
             while (rs.next()) {
                 //domain is column 1
                 FeatureEnum feature = FeatureEnum.valueOf(rs.getString(2).trim());
-                String open = rs.getString(3).trim();
-                String close = rs.getString(4).trim();
-                String left = rs.getString(5).trim();
-                String right = rs.getString(6).trim();
+                String open = SQLtoString(rs.getString(3).trim());
+                String close = SQLtoString(rs.getString(4).trim());
+                String left = SQLtoString(rs.getString(5).trim());
+                String right = SQLtoString(rs.getString(6).trim());
                 ruleList.add(new Rule(feature, open, close, left, right));
             }
 
@@ -82,13 +82,46 @@ public class WrapperDB {
         if(checkDomainExists(wrapper.getDomain())) removeRules(wrapper.getDomain());
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("INSERT INTO extractionrules VALUES ('%s','%s','%s')",wrapper.getDomain(), wrapper.getHead(), wrapper.getTail()));
+            state.executeUpdate(String.format("INSERT INTO headtail VALUES ('%s','%s','%s')",wrapper.getDomain(), stringToSQL(wrapper.getHead()), stringToSQL(wrapper.getTail())));
             state.close();
 
         } catch (SQLException e) {
             return false;
         }
         return addRules(wrapper.getDomain(), wrapper.getRuleList());
+    }
+    
+    private String stringToSQL(String string){
+        //need to process anything putting into SQL first to make sure it is valid
+        //need to escape any special characters
+        String newString = "";
+        
+        for (int i = 0; i < string.length(); i++) {
+            if(string.charAt(i) == '\"'
+                    || string.charAt(i) == '\''){
+                //add a second to escape
+                newString += string.charAt(i);
+            }
+            newString += string.charAt(i);
+        }
+        
+        return newString;
+    }
+    
+    private String SQLtoString(String string){
+        String newString = "";
+        
+        for (int i = 0; i < string.length(); i++) {
+            newString += string.charAt(i);
+            
+            if(string.charAt(i) == '\"'
+                    || string.charAt(i) == '\''){
+                i++; //this skips past second occurance
+            }
+            
+        }
+        
+        return newString;
     }
     
     public boolean addRules(String domain, List<Rule> ruleList){
@@ -99,7 +132,8 @@ public class WrapperDB {
             String updateString = "INSERT INTO extractionrules VALUES ";
             for (int i = 0; i < ruleList.size(); i++) {
                 Rule rule = ruleList.get(i);
-                updateString += String.format("('%s','%s','%s','%s','%s','%s')", domain, rule.getFeatureName(), rule.getOpen(), rule.getClose(), rule.getLeft(), rule.getRight());
+                updateString += String.format("('%s','%s','%s','%s','%s','%s')", domain, rule.getFeatureName(), stringToSQL(rule.getOpen())
+                        , stringToSQL(rule.getClose()), stringToSQL(rule.getLeft()), stringToSQL(rule.getRight()));
                 if(i < ruleList.size() - 1) updateString += ",";
             }
             state.executeUpdate(updateString);

@@ -16,6 +16,7 @@
 
         <form action='AddTrainingData.do' method='POST' enctype="multipart/form-data">
             <input type='file' name='file'><br><br>
+            <input type="hidden" name="test" value="test">
             <input type='submit' name='upload_btn' value='upload'>
         </form>
     </body>

@@ -18,7 +18,7 @@
     <body>
         <h1>Confirm Test Data</h1>
         
-        <form action="addTestData.jsp">
+        <form action="addTestingData.jsp">
             <input type="submit" value="Change file">
         </form>
         <br>
