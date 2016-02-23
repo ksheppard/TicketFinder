@@ -25,11 +25,11 @@
       <fieldset data-role="collapsible">
         <legend>Create an account</legend>
           <label for="email">Email Address </label>
-          <input type="text" name="text" id="email">
+          <input type="text" name="email" id="email">
           <label for="password">Password </label>
-          <input type="password" name="text" id="password">
+          <input type="password" name="password" id="password">
           <label for="passwordconf">Confirm Password </label>
-          <input type="password" name="text" id="passwordconf">
+          <input type="password" name="passwordconf" id="passwordconf">
       <input type="submit" data-inline="true" value="Register">
       </fieldset>
     </form>
@@ -38,9 +38,9 @@
       <fieldset data-role="collapsible">
         <legend>Login</legend>
           <label for="email">Email Address </label>
-          <input type="text" name="text" id="email">
+          <input type="text" name="email" id="email">
           <label for="password">Password </label>
-          <input type="password" name="text" id="password">	
+          <input type="password" name="password" id="password">	
       <input type="submit" data-inline="true" value="Login">
       </fieldset>
     </form>

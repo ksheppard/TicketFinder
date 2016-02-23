@@ -51,7 +51,14 @@
         <servlet-name>Logout</servlet-name>
         <servlet-class>Controllers.Logout</servlet-class>
     </servlet>
- 
+    <servlet>
+        <servlet-name>SortResultsServlet</servlet-name>
+        <servlet-class>Controllers.SortResultsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FilterResultsServlet</servlet-name>
+        <servlet-class>Controllers.FilterResultsServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TestingServlet</servlet-name>
         <url-pattern>/test.do</url-pattern>
@@ -88,7 +95,14 @@
         <servlet-name>Logout</servlet-name>
         <url-pattern>/Logout.do</url-pattern>
     </servlet-mapping>
-
+    <servlet-mapping>
+        <servlet-name>SortResultsServlet</servlet-name>
+        <url-pattern>/sortResults.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FilterResultsServlet</servlet-name>
+        <url-pattern>/filterResults.do</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30

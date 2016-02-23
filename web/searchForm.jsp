@@ -17,7 +17,7 @@
 		background-color:#c3dfef;
 	}
 	#tfnewsearch{
-		float:right;
+		float:center;
 		padding:20px;
 	}
 	.tftextinput{
@@ -65,10 +65,15 @@
 	<!-- HTML for SEARCH BAR -->
 	<div id="tfheader">
 		<form id="tfnewsearch" method="POST" action="PerformSearch.do">
-		        <input type="text" class="tftextinput" name="q" size="21" maxlength="120"><input type="submit" value="search" class="tfbutton">
+		        <input type="text" class="tftextinput" name="search" size="21" maxlength="120"><input type="submit" value="search" class="tfbutton">
+                        <br><br>
+                        Advanced search options<br><br>
+                        Location: Within <input type="text" name="miles" size="21" maxlength="4"> miles of <input type="text" name="location" size="21" maxlength="120"><br>
+                        Date: Between <input type="date" name="dateStart" size="21" > and <input type="date" name="dateEnd" size="21" ><br>
 		</form>
 	<div class="tfclear"></div>
 	</div>
+        
 </body>
 </html>
 
