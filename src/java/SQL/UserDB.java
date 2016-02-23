@@ -27,8 +27,13 @@ public class UserDB {
         return null;
     }
     
-    public void addUser(){
+    public User addUser(String email, String pass){
         
+        //if adds successfully
+        //will extract ID also
+        return loginUser(email, pass);
+        
+        //else return null;
     }
     
     public void editUser(){
@@ -42,5 +47,9 @@ public class UserDB {
     public void changePassword(User user, String oldPass, String newPass){
         //make sure they have entered new passowrd twice
         
+    }
+
+    public boolean checkExists(String email) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

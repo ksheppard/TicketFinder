@@ -5,20 +5,8 @@
  */
 package Controllers;
 
-import Models.SiteFeatures;
-import Models.WrapperExecutor;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -28,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Kyran
  */
-public class PerformSearch extends HttpServlet {
+public class SortResultsServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -41,25 +29,18 @@ public class PerformSearch extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            String search = request.getParameter("search").toString();
-            
-            DateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
-            
-            Date dateStart = format.parse(request.getParameter("dateStart"));
-            Date dateEnd =  format.parse(request.getParameter("dateEnd"));
-            int distance = Integer.parseInt(request.getParameter("distance"));
-            String location = request.getParameter("location").toString();
-            
-            WrapperExecutor we = new WrapperExecutor((Connection) request.getServletContext().getAttribute("connection"));
-            
-            List<SiteFeatures> siteList = we.performSearch(null, null);
-            request.setAttribute("searchResults", siteList);
-            
-            RequestDispatcher view = request.getRequestDispatcher("searchResults.jsp");
-            view.forward(request, response);
-        } catch (ParseException ex) {
-            Logger.getLogger(PerformSearch.class.getName()).log(Level.SEVERE, null, ex);
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet SortResultsServlet</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet SortResultsServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
         }
     }
 

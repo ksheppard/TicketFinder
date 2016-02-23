@@ -30,7 +30,7 @@ public class WrapperExecutor {
         //for when is used by wrapper tester
     }
     
-    public List<SiteFeatures> performSearch(String searchString){
+    public List<SiteFeatures> performSearch(String searchString, AdvancedSearchOptions advanced){
         return null;
     }
     
