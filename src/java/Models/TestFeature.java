@@ -5,6 +5,8 @@
  */
 package Models;
 
+import Models.Enums.FeatureEnum;
+
 /**
  *
  * @author Kyran

@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Enums.FeatureEnum;
 import SQL.WrapperDB;
 import java.io.IOException;
 import java.sql.Connection;
@@ -24,47 +25,61 @@ import org.jsoup.nodes.Document;
 public class WrapperTrainer {
 
     WrapperDB wrapperDB;
-    
+
     String html;
     private final int NUM_OF_CHARS = 150;
     private final int HEAD_TAIL_CHARS = 600;
-    private final char[] CHARS_TO_CHECK = {'[', '(', '{', '<',  '\"', '\'', '>', '}', ')', ']'}; //if change need to change methods that use
-    
+    private final char[] CHARS_TO_CHECK = {'[', '(', '{', '<', '\"', '\'', '>', '}', ')', ']'}; //if change need to change methods that use
+
     List<String> htmlDocs = new ArrayList<>();
-    
+
     WrapperTester wrapperTester = new WrapperTester();
-    
-    private List<SiteFeatures> trainingData;
-    
+
+    private List<SiteFeatures> indTrainingData;
+    private List<TicketListFeatures> listTrainingData;
+
     public WrapperTrainer(Connection conn) {
         wrapperDB = new WrapperDB(conn);
     }
-    
-    public void trainSystem(List<SiteFeatures> trainingData) {
-        this.trainingData = trainingData;
+
+    public void trainIndividual(List<SiteFeatures> trainingData) {
+        this.indTrainingData = trainingData;
         List<Wrapper> wrapperList = new ArrayList<Wrapper>();
         htmlDocs = new ArrayList<>();
-        
+
         for (int i = 0; i < trainingData.size(); i++) {
             //wrapperList.add(generateWrapper(siteList.get(i)));
-            wrapperList.add(generateFromText(trainingData.get(i)));
+            wrapperList.add(generateIndWrapper(trainingData.get(i)));
         }
         Wrapper wrapper = aggregateWrappers(wrapperList);
-        
+        wrapper.setType(0);
         wrapperDB.addWrapper(wrapper);
         //save into db at end
     }
-    
-    private Wrapper generateFromText(SiteFeatures feature) {
+
+    public void trainLists(List<TicketListFeatures> trainingData) {
+        this.listTrainingData = trainingData;
+
+        List<Wrapper> wrapperList = new ArrayList<Wrapper>();
+        htmlDocs = new ArrayList<>();
+
+        for (int i = 0; i < trainingData.size(); i++) {
+            //wrapperList.add(generateWrapper(siteList.get(i)));
+            wrapperList.add(generateListWrapper(trainingData.get(i)));
+        }
+        Wrapper wrapper = aggregateWrappers(wrapperList);
+        wrapper.setType(1);
+        wrapperDB.addWrapper(wrapper);
+    }
+
+    private Wrapper generateIndWrapper(SiteFeatures feature) {
         Wrapper wrapper = null;
         html = null;
         try {
             Document doc = Jsoup.connect(feature.getUrl()).get();
             html = doc.body().toString();
             htmlDocs.add(html);
-            int length = html.length();
-            wrapper = createWrapperFromSearch(searchFileForFeatures(feature), feature.getDomain());
-            System.out.println("");
+            wrapper = createIndWrapperFromSearch(searchFileForIndFeatures(feature), feature.getDomain());
         } catch (IOException ex) {
             Logger.getLogger(WrapperHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -72,10 +87,29 @@ public class WrapperTrainer {
         return wrapper;
     }
 
-    private List<WrapperSearchResult> searchFileForFeatures(SiteFeatures siteFeature) {
+    private Wrapper generateListWrapper(TicketListFeatures feature) {
+        Wrapper wrapper = null;
+        html = null;
+        try {
+            Document doc = Jsoup.connect(feature.getUrl()).get();
+            html = doc.body().toString();
+            htmlDocs.add(html);
+            wrapper = createListWrapperFromSearch(searchFileForListFeatures(feature), feature.getDomain());
+        } catch (IOException ex) {
+            Logger.getLogger(WrapperHelper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return wrapper;
+    }
+
+    private List<WrapperSearchResult> searchFileForIndFeatures(SiteFeatures siteFeature) {
         List<WrapperSearchResult> searchList = new ArrayList<WrapperSearchResult>();
 
         for (FeatureEnum feature : FeatureEnum.values()) {
+            if (feature == FeatureEnum.URL) {
+                continue;
+            }
+
             String value = siteFeature.getFeatureMap().get(feature);
             if (value.equals("")) {
                 continue;
@@ -95,7 +129,34 @@ public class WrapperTrainer {
         return searchList;
     }
 
-    private Wrapper createWrapperFromSearch(List<WrapperSearchResult> searchList, String domain) {
+    private ArrayList<ArrayList<WrapperSearchResult>> searchFileForListFeatures(TicketListFeatures siteFeature) {
+        ArrayList<ArrayList<WrapperSearchResult>> searchList = new ArrayList<ArrayList<WrapperSearchResult>>();
+        //storing as a list of lists to keep track of how many times each url was found and keep seperated
+
+        ArrayList<WrapperSearchResult> tempList;
+        for (int i = 0; i < siteFeature.getUrlList().size(); i++) {
+            tempList = new ArrayList<>();
+            String value = siteFeature.getUrlList().get(i);
+            if (value.equals("")) {
+                continue;
+            }
+            int index = 0;
+            while (true) {
+
+                index = html.indexOf(value, index);
+                if (index == -1) {
+                    break;
+                } else {
+                    tempList.add(new WrapperSearchResult(index, value, FeatureEnum.URL));
+                }
+                index += value.length();
+            }
+            searchList.add(tempList);
+        }
+        return searchList;
+    }
+
+    private Wrapper createIndWrapperFromSearch(List<WrapperSearchResult> searchList, String domain) {
         Wrapper wrapper = new Wrapper(domain);
         int min = -1;
         int max = -1;
@@ -108,6 +169,7 @@ public class WrapperTrainer {
             //set open and close here if is valid
             wrapper.addRule(rule);
 
+            //aggregate the rules here
             //set min and max to be used for getting head and tail
             if (min == -1 || min > searchResult.getStartIndex() - 1) {
                 min = searchResult.getStartIndex() - 1; //-1 so that it is set before the beginning of the feature
@@ -124,7 +186,69 @@ public class WrapperTrainer {
 
         return wrapper;
     }
-    
+
+    private Wrapper createListWrapperFromSearch(ArrayList<ArrayList<WrapperSearchResult>> searchList, String domain) {
+        Wrapper wrapper = new Wrapper(domain);
+        int min = -1;
+        int max = -1;
+
+        int minSize = -1;
+
+        for (int i = 0; i < searchList.size(); i++) {
+            int size = searchList.get(i).size();
+            if (minSize == -1 || minSize > size) {
+                minSize = size;
+            }
+        }
+        List<Rule> ruleList = new ArrayList<>();
+        //first need to agregate within itself and then check whether matches the other rules
+        for (int i = 0; i < minSize; i++) {
+            List<Rule> tempRuleList = new ArrayList<>();
+            for (int j = 0; j < searchList.size(); j++) {
+                WrapperSearchResult searchResult = searchList.get(j).get(i);
+                Rule rule = new Rule(searchResult.getFeature());
+                rule.setLeft(searchResult, null, html);
+                rule.setRight(searchResult, null, html);
+
+                if (min == -1 || min > searchResult.getStartIndex() - 1) {
+                    min = searchResult.getStartIndex() - 1; //-1 so that it is set before the beginning of the feature
+                }
+                if (max == -1 || max < searchResult.getStartIndex() + searchResult.getValue().length()) {
+                    max = searchResult.getStartIndex() + searchResult.getValue().length();
+                }
+                tempRuleList.add(rule);
+            }
+            Rule rule = aggregateRuleList(tempRuleList);
+            rule.setOpen(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0, min));
+            rule.setClose(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));
+            
+            
+            ruleList.add(rule);
+        }
+
+//        for (int i = 0; i < searchList.size(); i++) {
+//            WrapperSearchResult searchResult = searchList.get(i);
+//            Rule rule = new Rule(searchResult.getFeature());
+//            rule.setLeft(searchResult, searchList, html);
+//            rule.setRight(searchResult, searchList, html);
+//            //set open and close here if is valid
+//            wrapper.addRule(rule);
+//
+//            //set min and max to be used for getting head and tail
+//            if (min == -1 || min > searchResult.getStartIndex() - 1) {
+//                min = searchResult.getStartIndex() - 1; //-1 so that it is set before the beginning of the feature
+//            }
+//            if (max == -1 || max < searchResult.getStartIndex() + searchResult.getValue().length()) {
+//                max = searchResult.getStartIndex() + searchResult.getValue().length();
+//            }
+//        }
+        wrapper.setHead("<body>");
+        wrapper.setTail("</body>");
+        wrapper.setRuleList(ruleList);
+        
+        return wrapper;
+    }
+
     // <editor-fold desc="Wrapper aggregation">
     private Wrapper aggregateWrappers(List<Wrapper> wrapperList) {
         //after have aggregated all those that can, will 
@@ -147,11 +271,14 @@ public class WrapperTrainer {
         head = compareLR(tempHeadList, true, HEAD_TAIL_CHARS);
         tail = compareLR(tempTailList, false, HEAD_TAIL_CHARS);
 
-
         //group into lists of each rule type
         //handles events where creates different number of rules for a feature
         ArrayList<ArrayList<Rule>> listOfRuleLists;
         for (FeatureEnum feature : FeatureEnum.values()) {
+//            if (feature == FeatureEnum.URL) {
+//                continue;
+//            }
+
             listOfRuleLists = new ArrayList<ArrayList<Rule>>();
             for (int i = 0; i < wrapperList.size(); i++) {
                 listOfRuleLists.add(wrapperList.get(i).filterRules(feature));
@@ -173,10 +300,10 @@ public class WrapperTrainer {
                     }
                 } else {
                     //if different sizes
-                    
+
                     //just temporary code for now
                     boolean added = false;
-                    
+
                     for (int i = 0; i < minimumNumOfRules(listOfRuleLists); i++) {
                         tempRuleList = new ArrayList<>();
                         for (int j = 0; j < listOfRuleLists.size(); j++) {
@@ -193,7 +320,7 @@ public class WrapperTrainer {
                     }
                     //if not been ab le to add one then have to go through each possible comination of rules until finds a matching set that pass test
                     //only want to do this as a last resort whcih is why its left until now
-                    if(!added){
+                    if (!added) {
                         //DO THIS
                         System.out.println("");
                     }
@@ -201,7 +328,7 @@ public class WrapperTrainer {
             }
         }
 
-        return new Wrapper(domain, head, tail, aggregatedRuleList);
+        return new Wrapper(domain, head, tail, aggregatedRuleList, wrapperList.get(0).getType());
     }
 
     private int minimumNumOfRules(List<Wrapper> wrapperList) {
@@ -215,7 +342,7 @@ public class WrapperTrainer {
 
         return min;
     }
-    
+
     private int minimumNumOfRules(ArrayList<ArrayList<Rule>> listOfRuleLists) {
         int min = listOfRuleLists.get(0).size();
 
@@ -259,11 +386,14 @@ public class WrapperTrainer {
         FeatureEnum feature = ruleList.get(0).getFeatureName();
         String left = compareLR(leftList, true, NUM_OF_CHARS);
         String right = compareLR(rightList, false, NUM_OF_CHARS);
+        
         String open = "";
         String close = "";
 
-        if(left == "" || right == "") return null;
-        
+        if (left == "" || right == "") {
+            return null;
+        }
+
         return new Rule(feature, open, close, left, right);
     }
     // </editor-fold>
@@ -292,7 +422,12 @@ public class WrapperTrainer {
                 }
             } else {
                 //if hasnt matched then have to assume that there is an interchangeable piece of info here
-                if(aggregated.length() == 0)return "";
+                if (aggregated.length() == 0) {
+                    return "";
+                }
+                else if(aggregated.replace(" ", "").lastIndexOf(WrapperExecutor.MODIFIER_STRING) > (aggregated.replace(" ", "").length() - WrapperExecutor.MODIFIER_STRING.length() - 2)){
+                    break outerloop;
+                }
                 char c = compareToCharArray(aggregated.charAt(aggregated.length() - 1), isReverse);
                 if (c != ' ' || (c = compareToCharArray(aggregated, isReverse)) != ' ') {
                     for (int j = 0; j < stringList.size(); j++) {
@@ -331,7 +466,7 @@ public class WrapperTrainer {
             if (CHARS_TO_CHECK[i] == character) {
                 if (i == 4 || i == 5) {
                     //IGNORE QUOTES FOR NOW
-                    
+
                     //return CHARS_TO_CHECK[i];
                 } else {
                     return CHARS_TO_CHECK[CHARS_TO_CHECK.length - 1 - i];
@@ -352,7 +487,7 @@ public class WrapperTrainer {
                 if (CHARS_TO_CHECK[j] == character) {
                     if (j == 4 || j == 5) {
                         //IGNORE QUOTES FOR NOW
-                        
+
                         //need to check has odd number of this symbol in the list so far else wont work, make sure is an opening 
                         if (i == 0 || getNumOfOccurances(string, CHARS_TO_CHECK[j]) % 2 == 1) //return CHARS_TO_CHECK[j]; 
                         //atm have doubts as what if the content is in the middle of some quotes, wont know what is inside or outside
@@ -405,13 +540,12 @@ public class WrapperTrainer {
         }
         return true;
     }
-    
+
     // </editor-fold>
-    
     public boolean testRule(Rule rule) {
         //could change so have a discrepency value where can accept if gets 4/5 right or something?
         for (int i = 0; i < htmlDocs.size(); i++) {
-            String expectedValue = trainingData.get(i).getFeatureMap().get(rule.getFeatureName());
+            String expectedValue = indTrainingData.get(i).getFeatureMap().get(rule.getFeatureName());
 
             if (expectedValue != "") {
                 String value = wrapperTester.getValFromRule(htmlDocs.get(i), rule);
@@ -424,5 +558,5 @@ public class WrapperTrainer {
         }
         return true;
     }
- 
+
 }

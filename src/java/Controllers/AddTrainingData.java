@@ -7,6 +7,7 @@ package Controllers;
 
 import Models.FileReader;
 import Models.SiteFeatures;
+import Models.TicketListFeatures;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -44,19 +45,37 @@ public class AddTrainingData extends HttpServlet {
         InputStream fileContent = filePart.getInputStream();
 
         FileReader fr = new FileReader();
-        List<SiteFeatures> list = fr.readDataFromFile(fileContent);
-        request.getServletContext().setAttribute("trainingData", list);
+        int type = Integer.parseInt(request.getParameter("type"));
 
-        String type = request.getParameter("type");
-        if(type == "train"){
-            RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
-            view.forward(request, response);
+        if (type == 0) {
+            //if individual pages
+            List<SiteFeatures> list = fr.readIndDataFromFile(fileContent);
+            request.getServletContext().setAttribute("trainingIndData", list);
+
+            String action = request.getParameter("action");
+            if (action.equals("train")) {
+                RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
+                view.forward(request, response);
+            } else {
+                RequestDispatcher view = request.getRequestDispatcher("testDataConfirmation.jsp");
+                view.forward(request, response);
+            }
+        } else {
+            //if list of pages
+            
+            List<TicketListFeatures> list = fr.readListDataFromFile(fileContent);
+            request.getServletContext().setAttribute("trainingListData", list);
+
+            String action = request.getParameter("action");
+            if (action.equals("train")) {
+                RequestDispatcher view = request.getRequestDispatcher("trainingDataListConfirmation.jsp");
+                view.forward(request, response);
+            } else {
+                RequestDispatcher view = request.getRequestDispatcher("testDataListConfirmation.jsp");
+                view.forward(request, response);
+            }
+            
         }
-        else{
-            RequestDispatcher view = request.getRequestDispatcher("testDataConfirmation.jsp");
-            view.forward(request, response);
-        }
-       
 
     }
 

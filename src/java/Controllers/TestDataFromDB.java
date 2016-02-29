@@ -39,7 +39,7 @@ public class TestDataFromDB extends HttpServlet {
         
         WrapperHelper trainingWrapperHelper = new WrapperHelper();
         TestDataDB testDataDB = new TestDataDB((Connection) request.getServletContext().getAttribute("connection"));
-        request.getServletContext().setAttribute("trainingData", testDataDB.getTestData(domain));
+        request.getServletContext().setAttribute("trainingData", testDataDB.getIndTestData(domain));
 
         RequestDispatcher view = request.getRequestDispatcher("AdminPages/trainingDataConfirmation.jsp");
         view.forward(request, response);

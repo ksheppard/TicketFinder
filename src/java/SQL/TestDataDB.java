@@ -5,7 +5,7 @@
  */
 package SQL;
 
-import Models.FeatureEnum;
+import Models.Enums.FeatureEnum;
 import Models.SiteFeatures;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -58,7 +58,7 @@ public class TestDataDB {
         return true;
     }
     
-    public List<SiteFeatures> getTestData(String domain){
+    public List<SiteFeatures> getIndTestData(String domain){
         List<SiteFeatures> dataList = new ArrayList<>();
         
         //need to play around with joins

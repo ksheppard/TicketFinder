@@ -6,6 +6,7 @@
 package Controllers;
 
 import Models.SiteFeatures;
+import Models.TicketListFeatures;
 import Models.WrapperHelper;
 import Models.WrapperTrainer;
 import java.io.IOException;
@@ -44,11 +45,21 @@ public class TrainingServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
             /* TODO output your page here. You may use following sample code. */
             
-            List<SiteFeatures> list = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
+        int type = Integer.parseInt(request.getParameter("type"));
+        WrapperTrainer wt = new WrapperTrainer((Connection) request.getServletContext().getAttribute("connection"));
+        
+        if(type == 0){
+            List<SiteFeatures> list = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingIndData");
             
+            wt.trainIndividual(list);
+        }
+        else{
+            List<TicketListFeatures> list = (List<TicketListFeatures>) request.getServletContext().getAttribute("trainingListData");
             
-            WrapperTrainer wt = new WrapperTrainer((Connection) request.getServletContext().getAttribute("connection"));
-            wt.trainSystem(list);
+            wt.trainLists(list);
+        }
+        
+            
         
     }
 

@@ -20,13 +20,27 @@ public class FileReader {
         
     }
     
-    public List<SiteFeatures> readDataFromFile(InputStream inputStream) {
+    public List<SiteFeatures> readIndDataFromFile(InputStream inputStream) {
         List<SiteFeatures> siteList = new ArrayList<SiteFeatures>();
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             while ((line = br.readLine()) != null) {
                 siteList.add(new SiteFeatures(line));
+            }
+        } catch (Exception e) {
+
+        }
+        return siteList;
+    }
+    
+    public List<TicketListFeatures> readListDataFromFile(InputStream inputStream) {
+        List<TicketListFeatures> siteList = new ArrayList<TicketListFeatures>();
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while ((line = br.readLine()) != null) {
+                siteList.add(new TicketListFeatures(line));
             }
         } catch (Exception e) {
 

@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Enums.FeatureEnum;
 import SQL.TestDataDB;
 import SQL.WrapperDB;
 import java.sql.Connection;
@@ -34,12 +35,12 @@ public class WrapperTester {
         wrapperExecutor = new WrapperExecutor();
     }
     
-    public List<TestResult> performTestsFromDB(String domain) {
+    public List<TestResult> performIndTestsFromDB(String domain) {
         
-        return performTests(testDataDB.getTestData(domain));
+        return performIndTests(testDataDB.getIndTestData(domain));
     }
 
-    public List<TestResult> performTests(List<SiteFeatures> siteFeaturesList) {
+    public List<TestResult> performIndTests(List<SiteFeatures> siteFeaturesList) {
         List<TestResult> testResultList = new ArrayList<>();
         WebPageManager wpManager = new WebPageManager();
         //get all wrappers that need retrieving from db
@@ -47,7 +48,7 @@ public class WrapperTester {
 
         for (int i = 0; i < siteFeaturesList.size(); i++) {
             SiteFeatures sf = siteFeaturesList.get(i);
-            testResultList.add(testWrapper( wrapperMap.get(sf.getDomain()), wpManager.getHTML(sf.getUrl()), sf));
+            testResultList.add(testIndWrapper( wrapperMap.get(sf.getDomain()), wpManager.getHTML(sf.getUrl()), sf));
         }
 
         testDataDB.addTestData(siteFeaturesList);
@@ -67,17 +68,18 @@ public class WrapperTester {
         }
 
         for (int i = 0; i < uniqueDomains.size(); i++) {
-            wrapperMap.put(uniqueDomains.get(i), wrapperDB.getWrapper(uniqueDomains.get(i)));
+            wrapperMap.put(uniqueDomains.get(i), wrapperDB.getWrapper(uniqueDomains.get(i), 0));
         }
 
         return wrapperMap;
     }
 
-    private TestResult testWrapper(Wrapper wrapper, String html, SiteFeatures siteFeatures) {
+    private TestResult testIndWrapper(Wrapper wrapper, String html, SiteFeatures siteFeatures) {
         List<TestFeature> testFeatureList = new ArrayList();
 
         //perform test like from other method in wrapperhelper
         for (FeatureEnum feature : FeatureEnum.values()) {
+            if(feature == FeatureEnum.URL) continue;
             List<Rule> filteredRules = wrapper.filterRules(feature);
 
             if (filteredRules != null) {

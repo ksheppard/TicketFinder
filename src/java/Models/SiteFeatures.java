@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Enums.FeatureEnum;
 import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;

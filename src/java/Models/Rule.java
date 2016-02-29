@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Enums.FeatureEnum;
 import java.util.List;
 
 /**

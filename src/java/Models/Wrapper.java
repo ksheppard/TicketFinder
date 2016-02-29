@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Enums.FeatureEnum;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,16 +14,45 @@ import java.util.List;
  * @author Kyran
  */
 public class Wrapper {
+    private int id;
+    private int type;
     private String domain;
     private String head;
     private String tail;
     private List<Rule> ruleList;
 
-    public Wrapper(String domain, String head, String tail, List<Rule> ruleList) {
+    public Wrapper(String domain, String head, String tail, List<Rule> ruleList, int type) {
+        this.type = type;
         this.domain = domain;
         this.head = head;
         this.tail = tail;
         this.ruleList = ruleList;
+    }
+    
+    public Wrapper(int id, String domain, String head, String tail, List<Rule> ruleList, int type) {
+        this.id = id;
+        this.type = type;
+        this.domain = domain;
+        this.head = head;
+        this.tail = tail;
+        this.ruleList = ruleList;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+    
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
     
     public Wrapper(String domain) {

@@ -39,7 +39,7 @@ public class TestingServlet extends HttpServlet {
         List<SiteFeatures> testData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
         
         WrapperTester wt = new WrapperTester((Connection) request.getServletContext().getAttribute("connection"));
-        List<TestResult> results = wt.performTests(testData);
+        List<TestResult> results = wt.performIndTests(testData);
         
         
         request.getServletContext().setAttribute("testResults", results);

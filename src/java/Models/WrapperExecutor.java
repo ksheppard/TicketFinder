@@ -22,15 +22,19 @@ public class WrapperExecutor {
     
     WrapperDB wrapperDB;
     
+    SearchResultMiner srm;
+    
     public WrapperExecutor(Connection conn) {
         wrapperDB = new WrapperDB(conn);
+        srm = new SearchResultMiner();
     }
     
     public WrapperExecutor() {
         //for when is used by wrapper tester
     }
     
-    public List<SiteFeatures> performSearch(String searchString, AdvancedSearchOptions advanced){
+    public List<SiteFeatures> performSearch(String searchString){
+        List<String> urlList = srm.getSearchResults(searchString);
         return null;
     }
     

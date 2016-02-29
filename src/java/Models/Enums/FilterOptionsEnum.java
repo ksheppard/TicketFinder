@@ -3,18 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Models;
+package Models.Enums;
 
 /**
  *
- * @author Hannah
+ * @author Kyran
  */
-public enum FeatureEnum {
-    //order here is vital
-    Date, 
-    Time, 
-    Artist,  
-    Price, 
-    Location, 
-    Postcode
+public enum FilterOptionsEnum {
+    Date,
+    Price,
+    Domain,
+    Distance
+        
 }

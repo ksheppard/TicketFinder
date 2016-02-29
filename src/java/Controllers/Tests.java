@@ -5,7 +5,7 @@
  */
 package Controllers;
 
-import Models.FeatureEnum;
+import Models.Enums.FeatureEnum;
 import Models.Rule;
 import Models.WrapperHelper;
 import SQL.WrapperDB;
@@ -49,7 +49,7 @@ public class Tests extends HttpServlet {
     
     private void testWrapperHelper(){
         WrapperHelper wh = new WrapperHelper();
-        wh.testMethods();
+       // wh.testMethods();
     }
     
     private String testSQL(HttpServletRequest request){

@@ -41,26 +41,17 @@ public class PerformSearch extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
+        
             String search = request.getParameter("search").toString();
-            
-            DateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
-            
-            Date dateStart = format.parse(request.getParameter("dateStart"));
-            Date dateEnd =  format.parse(request.getParameter("dateEnd"));
-            int distance = Integer.parseInt(request.getParameter("distance"));
-            String location = request.getParameter("location").toString();
             
             WrapperExecutor we = new WrapperExecutor((Connection) request.getServletContext().getAttribute("connection"));
             
-            List<SiteFeatures> siteList = we.performSearch(null, null);
+            List<SiteFeatures> siteList = we.performSearch(search);
             request.setAttribute("searchResults", siteList);
             
             RequestDispatcher view = request.getRequestDispatcher("searchResults.jsp");
             view.forward(request, response);
-        } catch (ParseException ex) {
-            Logger.getLogger(PerformSearch.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
