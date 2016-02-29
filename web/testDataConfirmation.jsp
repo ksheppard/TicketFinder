@@ -23,6 +23,7 @@
         </form>
         <br>
         <form action="test.do"  method='GET'>
+            <input type="hidden" name="type" value="0">
             <input type="submit" value="Continue">
         </form>
         <br>
@@ -37,7 +38,7 @@
                 <th>Location</th> 
             </tr>
             <%
-                List<SiteFeatures> trainingData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
+                List<SiteFeatures> trainingData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingIndData");
                 for (int i = 0; i < trainingData.size(); i++) {
                     SiteFeatures site = trainingData.get(i);
             %>

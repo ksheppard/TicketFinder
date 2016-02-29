@@ -15,8 +15,10 @@
         <h1>Add training data!</h1>
 
         <form action='AddTrainingData.do' method='POST' enctype="multipart/form-data">
+            Data type: <input type="radio" checked="true" name="type" value="0"> Individual
+            <input type="radio"  name="type" value="1"> List<br>
             <input type='file' name='file'><br><br>
-            <input type="hidden" name="test" value="test">
+            <input type="hidden" name="action" value="train">
             <input type='submit' name='upload_btn' value='upload'>
         </form>
     </body>
