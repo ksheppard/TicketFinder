@@ -6,7 +6,7 @@
 package Controllers;
 
 import Models.FileReader;
-import Models.SiteFeatures;
+import Models.Structures.SiteFeatures;
 import Models.TicketListFeatures;
 import java.io.IOException;
 import java.io.InputStream;

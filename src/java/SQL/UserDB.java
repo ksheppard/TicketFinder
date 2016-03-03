@@ -5,7 +5,7 @@
  */
 package SQL;
 
-import Models.User;
+import Models.Structures.User;
 import java.sql.Connection;
 
 /**

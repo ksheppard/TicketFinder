@@ -6,8 +6,8 @@
 package SQL;
 
 import Models.Enums.FeatureEnum;
-import Models.Rule;
-import Models.Wrapper;
+import Models.Structures.Rule;
+import Models.Structures.Wrapper;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -5,8 +5,8 @@
  */
 package Controllers;
 
-import Models.SiteFeatures;
-import Models.TestResult;
+import Models.Structures.SiteFeatures;
+import Models.Structures.TestResult;
 import Models.WrapperTester;
 import SQL.TestDataDB;
 import java.io.IOException;

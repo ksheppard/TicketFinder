@@ -3,28 +3,31 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Models;
+package Models.Structures;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  *
  * @author Kyran
  */
-public class AdvancedSearchOptions {
+public class SearchFilter {
     private String location;
     private int distance;
     private Date startDate;
     private Date endDate;
+    private List<String> ticketProviders;
 
-    public AdvancedSearchOptions(String location, int distance, Date startDate, Date endDate) {
+    public SearchFilter(String location, int distance, Date startDate, Date endDate, List<String> ticketProviders) {
         this.location = location;
         this.distance = distance;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.ticketProviders = ticketProviders;
     }
 
-    public AdvancedSearchOptions() {
+    public SearchFilter() {
     }
     
     
@@ -59,6 +62,14 @@ public class AdvancedSearchOptions {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public List<String> getTicketProviders() {
+        return ticketProviders;
+    }
+
+    public void setTicketProviders(List<String> ticketProviders) {
+        this.ticketProviders = ticketProviders;
     }
     
     

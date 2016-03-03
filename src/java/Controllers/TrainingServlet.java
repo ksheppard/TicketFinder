@@ -5,7 +5,7 @@
  */
 package Controllers;
 
-import Models.SiteFeatures;
+import Models.Structures.SiteFeatures;
 import Models.TicketListFeatures;
 import Models.WrapperHelper;
 import Models.WrapperTrainer;

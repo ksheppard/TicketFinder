@@ -5,7 +5,7 @@
  */
 package Controllers;
 
-import Models.SiteFeatures;
+import Models.Structures.SiteFeatures;
 import Models.WrapperExecutor;
 import java.io.IOException;
 import java.io.PrintWriter;

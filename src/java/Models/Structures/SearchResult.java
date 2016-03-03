@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Models;
+package Models.Structures;
 
 import java.sql.Time;
 import java.util.Date;
@@ -21,6 +21,7 @@ public class SearchResult {
     private List<SiteFeatures> siteFeatures;
 
     private double distance;
+    private String distanceLocation; //this will be set so know whether need to recalculate distance or already set
     
     public SearchResult(Date date, Time time, String artist, String location, List<SiteFeatures> siteFeatures) {
         this.date = date;
@@ -74,12 +75,31 @@ public class SearchResult {
         return distance;
     }
 
-    public void setDistance(String location) {
+    private void setDistance(String location) {
         //needs to work out the distance from the location here
         
         this.distance = distance;
     }
+
+    public String getDistanceLocation() {
+        return distanceLocation;
+    }
+
+    public void setDistanceLocation(String distanceLocation) {
+        if(!this.distanceLocation.equals(distanceLocation)){
+            this.distanceLocation = distanceLocation;
+            setDistance(distanceLocation);
+        }
+        
+    }
     
+    public void clearSites(){
+        this.siteFeatures.clear();
+    }
+    
+    public void addSite(SiteFeatures sf){
+        this.siteFeatures.add(sf);
+    }
     
     
     

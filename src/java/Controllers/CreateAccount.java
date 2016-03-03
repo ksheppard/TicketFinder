@@ -5,7 +5,7 @@
  */
 package Controllers;
 
-import Models.User;
+import Models.Structures.User;
 import SQL.UserDB;
 import java.io.IOException;
 import java.io.PrintWriter;

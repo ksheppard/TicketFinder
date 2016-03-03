@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Models;
+package Models.Structures;
 
 import Models.Enums.FeatureEnum;
 import java.util.ArrayList;
@@ -101,7 +101,7 @@ public class Wrapper {
         this.ruleList = ruleList;
     }
 
-    ArrayList<Rule> filterRules(FeatureEnum feature) {
+    public ArrayList<Rule> filterRules(FeatureEnum feature) {
         ArrayList<Rule> filteredList = new ArrayList<>();
         for (int i = 0; i < ruleList.size(); i++) {
             if(ruleList.get(i).getFeatureName() == feature) filteredList.add(ruleList.get(i));

@@ -5,6 +5,11 @@
  */
 package Models;
 
+import Models.Structures.SiteFeatures;
+import Models.Structures.TestFeature;
+import Models.Structures.Wrapper;
+import Models.Structures.Rule;
+import Models.Structures.TestResult;
 import Models.Enums.FeatureEnum;
 import SQL.TestDataDB;
 import SQL.WrapperDB;
@@ -104,6 +109,10 @@ public class WrapperTester {
     //WILL BE BROKEN UP AND MOVED INTO WRAPPER EXECUTOR?
     public String getValFromRule(String html, Rule rule) {
         return wrapperExecutor.getValFromRule(html, rule);
+    }
+    
+    public List<String> getListValsFromRule(String html, Rule rule, boolean testOC) {
+        return wrapperExecutor.getListValsFromRule(html, rule, testOC);
     }
 
 }

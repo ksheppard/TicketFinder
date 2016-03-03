@@ -6,7 +6,7 @@
 package SQL;
 
 import Models.Enums.FeatureEnum;
-import Models.SiteFeatures;
+import Models.Structures.SiteFeatures;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

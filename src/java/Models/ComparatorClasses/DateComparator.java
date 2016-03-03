@@ -5,7 +5,7 @@
  */
 package Models.ComparatorClasses;
 
-import Models.SearchResult;
+import Models.Structures.SearchResult;
 import java.util.Comparator;
 
 /**

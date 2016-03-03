@@ -6,7 +6,7 @@
 package Controllers;
 
 import Models.Enums.FeatureEnum;
-import Models.Rule;
+import Models.Structures.Rule;
 import Models.WrapperHelper;
 import SQL.WrapperDB;
 import java.io.IOException;

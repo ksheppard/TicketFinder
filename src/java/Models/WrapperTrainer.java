@@ -5,10 +5,15 @@
  */
 package Models;
 
+import Models.Structures.SiteFeatures;
+import Models.Structures.Wrapper;
+import Models.Structures.Rule;
 import Models.Enums.FeatureEnum;
+import Models.Structures.MinMaxPair;
 import SQL.WrapperDB;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +43,8 @@ public class WrapperTrainer {
     private List<SiteFeatures> indTrainingData;
     private List<TicketListFeatures> listTrainingData;
 
+    private List<MinMaxPair> minMaxPairs;
+
     public WrapperTrainer(Connection conn) {
         wrapperDB = new WrapperDB(conn);
     }
@@ -45,6 +52,8 @@ public class WrapperTrainer {
     public void trainIndividual(List<SiteFeatures> trainingData) {
         this.indTrainingData = trainingData;
         List<Wrapper> wrapperList = new ArrayList<Wrapper>();
+        minMaxPairs = new ArrayList<MinMaxPair>();
+
         htmlDocs = new ArrayList<>();
 
         for (int i = 0; i < trainingData.size(); i++) {
@@ -59,6 +68,7 @@ public class WrapperTrainer {
 
     public void trainLists(List<TicketListFeatures> trainingData) {
         this.listTrainingData = trainingData;
+        minMaxPairs = new ArrayList<MinMaxPair>();
 
         List<Wrapper> wrapperList = new ArrayList<Wrapper>();
         htmlDocs = new ArrayList<>();
@@ -178,7 +188,7 @@ public class WrapperTrainer {
                 max = searchResult.getStartIndex() + searchResult.getValue().length();
             }
         }
-
+        minMaxPairs.add(new MinMaxPair(min, max));
         //use min and max to set head and tail here
         wrapper.setHead(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0, min)); //need extra validation to check if is above 0?
         wrapper.setTail(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));//need extra validation to check if doesnt exceed length of string 0?
@@ -221,10 +231,11 @@ public class WrapperTrainer {
             Rule rule = aggregateRuleList(tempRuleList);
             rule.setOpen(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0, min));
             rule.setClose(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));
-            
-            
+
             ruleList.add(rule);
         }
+
+        minMaxPairs.add(new MinMaxPair(min, max));
 
 //        for (int i = 0; i < searchList.size(); i++) {
 //            WrapperSearchResult searchResult = searchList.get(i);
@@ -245,7 +256,7 @@ public class WrapperTrainer {
         wrapper.setHead("<body>");
         wrapper.setTail("</body>");
         wrapper.setRuleList(ruleList);
-        
+
         return wrapper;
     }
 
@@ -268,8 +279,7 @@ public class WrapperTrainer {
             tempTailList.add(wrapperList.get(i).getTail());
         }
         //aggregate head and tail
-        head = compareLR(tempHeadList, true, HEAD_TAIL_CHARS);
-        tail = compareLR(tempTailList, false, HEAD_TAIL_CHARS);
+        
 
         //group into lists of each rule type
         //handles events where creates different number of rules for a feature
@@ -293,9 +303,7 @@ public class WrapperTrainer {
                         }
                         Rule aggregatedRule = aggregateRuleList(tempRuleList);
                         if (aggregatedRule != null) {
-                            if (testRule(aggregatedRule)) {
-                                aggregatedRuleList.add(aggregatedRule);
-                            }
+                            aggregatedRuleList.add(aggregatedRule);
                         }
                     }
                 } else {
@@ -312,10 +320,8 @@ public class WrapperTrainer {
                         }
                         Rule aggregatedRule = aggregateRuleList(tempRuleList);
                         if (aggregatedRule != null) {
-                            if (testRule(aggregatedRule)) {
-                                aggregatedRuleList.add(aggregatedRule);
-                                added = true;
-                            }
+                            aggregatedRuleList.add(aggregatedRule);
+                            added = true;
                         }
                     }
                     //if not been ab le to add one then have to go through each possible comination of rules until finds a matching set that pass test
@@ -327,8 +333,13 @@ public class WrapperTrainer {
                 }
             }
         }
+        
+        Wrapper wrapper = new Wrapper(domain, "", "", aggregatedRuleList, wrapperList.get(0).getType());
+        
+        wrapper = generateHT("head", tempHeadList);
+        
 
-        return new Wrapper(domain, head, tail, aggregatedRuleList, wrapperList.get(0).getType());
+        return 
     }
 
     private int minimumNumOfRules(List<Wrapper> wrapperList) {
@@ -374,19 +385,19 @@ public class WrapperTrainer {
         //return null if cant create a rule for it
         List<String> leftList = new ArrayList<>();
         List<String> rightList = new ArrayList<>();
-        //List<String> openList = new ArrayList<>();
-        //List<String> closeList = new ArrayList<>();
+        List<String> openList = new ArrayList<>();
+        List<String> closeList = new ArrayList<>();
 
         for (int i = 0; i < ruleList.size(); i++) {
             leftList.add(ruleList.get(i).getLeft());
             rightList.add(ruleList.get(i).getRight());
-            //openList.add(ruleList.get(i).getOpen());
-            //closeList.add(ruleList.get(i).getClose());
+            openList.add(ruleList.get(i).getOpen());
+            closeList.add(ruleList.get(i).getClose());
         }
         FeatureEnum feature = ruleList.get(0).getFeatureName();
         String left = compareLR(leftList, true, NUM_OF_CHARS);
         String right = compareLR(rightList, false, NUM_OF_CHARS);
-        
+
         String open = "";
         String close = "";
 
@@ -394,7 +405,17 @@ public class WrapperTrainer {
             return null;
         }
 
-        return new Rule(feature, open, close, left, right);
+        Rule rule = new Rule(feature, open, close, left, right);
+
+        if (ruleList.size() > 0 && ruleList.get(0).getFeatureName() == FeatureEnum.URL) {
+            if(testListRule(rule, true))
+                return generateOC(rule, openList, closeList);
+            }
+        else{
+            if(testRule(rule)) return rule;
+        }
+        
+        return null;
     }
     // </editor-fold>
     // <editor-fold desc="String comparison">
@@ -424,8 +445,7 @@ public class WrapperTrainer {
                 //if hasnt matched then have to assume that there is an interchangeable piece of info here
                 if (aggregated.length() == 0) {
                     return "";
-                }
-                else if(aggregated.replace(" ", "").lastIndexOf(WrapperExecutor.MODIFIER_STRING) > (aggregated.replace(" ", "").length() - WrapperExecutor.MODIFIER_STRING.length() - 2)){
+                } else if (aggregated.replace(" ", "").lastIndexOf(WrapperExecutor.MODIFIER_STRING) > (aggregated.replace(" ", "").length() - WrapperExecutor.MODIFIER_STRING.length() - 2)) {
                     break outerloop;
                 }
                 char c = compareToCharArray(aggregated.charAt(aggregated.length() - 1), isReverse);
@@ -548,7 +568,9 @@ public class WrapperTrainer {
             String expectedValue = indTrainingData.get(i).getFeatureMap().get(rule.getFeatureName());
 
             if (expectedValue != "") {
-                String value = wrapperTester.getValFromRule(htmlDocs.get(i), rule);
+                String value = wrapperTester.getValFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin(), minMaxPairs.get(i).getMax()), rule);
+                
+                //test the value only within specified minimum maximum range, is then the head/tails job to ensure only ever get this range
 
                 //compare to actual value
                 if (!value.equals(expectedValue)) {
@@ -558,5 +580,120 @@ public class WrapperTrainer {
         }
         return true;
     }
+    
+    public boolean testListRule(Rule rule, boolean testOC){
+        for (int i = 0; i < htmlDocs.size(); i++) {
+            List<String> expectedValue = listTrainingData.get(i).getUrlList();
+
+            if (expectedValue != null && expectedValue.size() > 0) {
+                List<String> actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin(), minMaxPairs.get(i).getMax()), rule, testOC);
+                
+                if(actualValue.isEmpty() || actualValue.size() != expectedValue.size()) return false;
+                
+                for (int j = 0; j < actualValue.size(); j++) {
+                    if(!expectedValue.contains(actualValue.get(j).trim())) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+   
+    
+    private Rule generateOC(Rule rule, List<String> openList, List<String> closeList) {
+        String open = "";
+        String close = "";
+        
+        open = identifyCommonSubStrOfNStr(openList);
+        close = identifyCommonSubStrOfNStr(closeList);
+        
+        rule.setOpen(open);
+        rule.setClose(close);
+        int count = 0;
+        while(!testListRule(rule, true)){
+            for (int i = 0; i < openList.size(); i++) {
+                openList.set(i, openList.get(i).replace(open, ""));
+                closeList.set(i, closeList.get(i).replace(close, ""));
+            }
+            
+            open = identifyCommonSubStrOfNStr(openList);
+            close = identifyCommonSubStrOfNStr(closeList);
+        
+            rule.setOpen(open);
+            rule.setClose(close);
+            
+            if(count == 5) return null;
+            count++;
+        }
+        
+        return rule;
+    }
+    
+    private Wrapper generateHT(List<String> headList, List<String> tailList, Wrapper initialWrapper){
+       Wrapper wrapper = initialWrapper;
+        
+        wrapper.setHead(identifyCommonSubStrOfNStr(headList));
+        wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
+        
+        int count = 0;
+        while(!testListRule(rule, true)){
+            for (int i = 0; i < headList.size(); i++) {
+                headList.set(i, headList.get(i).replace(wrapper.getHead(), ""));
+                tailList.set(i, tailList.get(i).replace(wrapper.getTail(), ""));
+            }
+            
+            wrapper.setHead(identifyCommonSubStrOfNStr(headList));
+            wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
+            
+            if(count == 5) return initialWrapper;
+            count++; 
+        }
+        
+        return wrapper;
+    }
+
+    public String identifyCommonSubStrOfNStr(List<String> strList) {
+
+        //maybe have to discount any whitespace in these from the count so still icnluded in string but not in the length
+        //so if a shorter string that contains no whitespace is found is more likely to be a better option
+        
+        String commonStr = "";
+        String smallStr = "";
+
+        //identify smallest String      
+        for (String s : strList) {
+            if (smallStr.length() < s.length()) {
+                smallStr = s;
+            }
+        }
+
+        String tempCom = "";
+        char[] smallStrChars = smallStr.toCharArray();
+        for (char c : smallStrChars) {
+            tempCom += c;
+
+            for (String s : strList) {
+                if (!s.contains(tempCom)) {
+                    tempCom = "";
+                    tempCom += c;
+                    for (String st : strList) {
+                        if (!st.contains(tempCom)) {
+                            tempCom = "";
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if (tempCom != "" && tempCom.length() > commonStr.length()) {
+                commonStr = tempCom;
+            }
+        }
+
+        return commonStr;
+    }
+
+    
 
 }
