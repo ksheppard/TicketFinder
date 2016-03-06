@@ -82,6 +82,14 @@ public class Rule {
         this.right = html.substring(searchResult.getStartIndex() + searchResult.getValue().length(), searchResult.getStartIndex() + searchResult.getValue().length() + NUM_OF_CHARS);
     }
 
+//    public void setClose(WrapperSearchResult searchResult, String html) {
+//        this.open = html.substring(searchResult.getStartIndex() - 1 - NUM_OF_CHARS - HEAD_TAIL_CHARS, searchResult.getStartIndex() - 1 - NUM_OF_CHARS);
+//    }
+//
+//    public void setOpen(WrapperSearchResult searchResult, String html) {
+//         this.close = html.substring(searchResult.getStartIndex() + searchResult.getValue().length() + NUM_OF_CHARS, searchResult.getStartIndex() + searchResult.getValue().length() + NUM_OF_CHARS + HEAD_TAIL_CHARS);
+//    }
+
 
    
     

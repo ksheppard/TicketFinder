@@ -94,7 +94,7 @@ public class WrapperExecutor {
                     //have found it and can set the end index
                     indexEnd = innerPointer + split[split.length - 1].length() - 1;
                     break;
-                }
+                } else break;
             }
         }
         return indexStart == -1 || indexEnd == -1 ? "" : html.substring(indexStart, indexEnd);
@@ -139,8 +139,11 @@ public class WrapperExecutor {
                         indexStart = innerPointer + split[split.length - 1].length() + 1;
                         break;
                     }
+                    else break;
                 }
             }
+            
+            if(indexStart == -1) break;
             //doesnt need to be nested as is repeated in both
             if (!rule.getRight().contains(MODIFIER_STRING)) {
                 indexEnd = html.indexOf(rule.getRight(), indexStart);

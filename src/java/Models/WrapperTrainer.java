@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.w3c.dom.html.HTMLDOMImplementation;
 
 /**
  *
@@ -46,7 +47,7 @@ public class WrapperTrainer {
     private List<MinMaxPair> minMaxPairs;
 
     public WrapperTrainer(Connection conn) {
-        wrapperDB = new WrapperDB(conn);
+        wrapperDB = new WrapperDB(conn); 
     }
 
     public void trainIndividual(List<SiteFeatures> trainingData) {
@@ -212,30 +213,32 @@ public class WrapperTrainer {
         }
         List<Rule> ruleList = new ArrayList<>();
         //first need to agregate within itself and then check whether matches the other rules
-        for (int i = 0; i < minSize; i++) {
-            List<Rule> tempRuleList = new ArrayList<>();
-            for (int j = 0; j < searchList.size(); j++) {
-                WrapperSearchResult searchResult = searchList.get(j).get(i);
-                Rule rule = new Rule(searchResult.getFeature());
-                rule.setLeft(searchResult, null, html);
-                rule.setRight(searchResult, null, html);
+        List<Rule> tempRuleList = new ArrayList<>();
+        for (int j = 0; j < searchList.size(); j++) {
+            WrapperSearchResult searchResult = searchList.get(j).get(0);
+            Rule rule = new Rule(searchResult.getFeature());
+            rule.setLeft(searchResult, null, html);
+            rule.setRight(searchResult, null, html);
+//                rule.setOpen(searchResult, html);
+//                rule.setClose(searchResult, html);
 
-                if (min == -1 || min > searchResult.getStartIndex() - 1) {
-                    min = searchResult.getStartIndex() - 1; //-1 so that it is set before the beginning of the feature
-                }
-                if (max == -1 || max < searchResult.getStartIndex() + searchResult.getValue().length()) {
-                    max = searchResult.getStartIndex() + searchResult.getValue().length();
-                }
-                tempRuleList.add(rule);
+            if (min == -1 || min > searchResult.getStartIndex() - 1) {
+                min = searchResult.getStartIndex() - 1; //-1 so that it is set before the beginning of the feature
             }
-            Rule rule = aggregateRuleList(tempRuleList);
+            if (max == -1 || max < searchResult.getStartIndex() + searchResult.getValue().length()) {
+                max = searchResult.getStartIndex() + searchResult.getValue().length();
+            }
+            tempRuleList.add(rule);
+        }
+        minMaxPairs.add(new MinMaxPair(min, max));
+
+        Rule rule = aggregateRuleList(tempRuleList, true);
+
+        if (rule != null) {
             rule.setOpen(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0, min));
             rule.setClose(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));
-
             ruleList.add(rule);
         }
-
-        minMaxPairs.add(new MinMaxPair(min, max));
 
 //        for (int i = 0; i < searchList.size(); i++) {
 //            WrapperSearchResult searchResult = searchList.get(i);
@@ -279,7 +282,6 @@ public class WrapperTrainer {
             tempTailList.add(wrapperList.get(i).getTail());
         }
         //aggregate head and tail
-        
 
         //group into lists of each rule type
         //handles events where creates different number of rules for a feature
@@ -301,7 +303,7 @@ public class WrapperTrainer {
                             Rule rule = listOfRuleLists.get(j).get(i);
                             tempRuleList.add(rule);
                         }
-                        Rule aggregatedRule = aggregateRuleList(tempRuleList);
+                        Rule aggregatedRule = aggregateRuleList(tempRuleList, false);
                         if (aggregatedRule != null) {
                             aggregatedRuleList.add(aggregatedRule);
                         }
@@ -318,7 +320,7 @@ public class WrapperTrainer {
                             Rule rule = listOfRuleLists.get(j).get(i);
                             tempRuleList.add(rule);
                         }
-                        Rule aggregatedRule = aggregateRuleList(tempRuleList);
+                        Rule aggregatedRule = aggregateRuleList(tempRuleList, false);
                         if (aggregatedRule != null) {
                             aggregatedRuleList.add(aggregatedRule);
                             added = true;
@@ -333,13 +335,12 @@ public class WrapperTrainer {
                 }
             }
         }
-        
-        Wrapper wrapper = new Wrapper(domain, "", "", aggregatedRuleList, wrapperList.get(0).getType());
-        
-        wrapper = generateHT("head", tempHeadList);
-        
 
-        return 
+        Wrapper wrapper = new Wrapper(domain, "", "", aggregatedRuleList, wrapperList.get(0).getType());
+
+        wrapper = generateHT(tempHeadList, tempTailList, wrapper);
+
+        return wrapper;
     }
 
     private int minimumNumOfRules(List<Wrapper> wrapperList) {
@@ -378,7 +379,7 @@ public class WrapperTrainer {
         return true;
     }
 
-    private Rule aggregateRuleList(List<Rule> ruleList) {
+    private Rule aggregateRuleList(List<Rule> ruleList, boolean internalAgg) {
         // can have multiple potential rules for same feature in same domain going in here
         //this will try and get the rule that matches all and tests, if doesnt work could potentially move to next set of rules for that feature 
         //(this is where web page contains same bit of info in different places)
@@ -407,14 +408,23 @@ public class WrapperTrainer {
 
         Rule rule = new Rule(feature, open, close, left, right);
 
-        if (ruleList.size() > 0 && ruleList.get(0).getFeatureName() == FeatureEnum.URL) {
-            if(testListRule(rule, true))
-                return generateOC(rule, openList, closeList);
+        if (!internalAgg) {
+            if (ruleList.size() > 0 && ruleList.get(0).getFeatureName() == FeatureEnum.URL) {
+                if (testListRule(rule, false, internalAgg)) {
+                    return generateOC(rule, openList, closeList);
+                }
+
+            } else {
+                if (testRule(rule)) {
+                    return rule;
+                }
             }
-        else{
-            if(testRule(rule)) return rule;
+        } else {
+            if (testListRule(rule, false, internalAgg)) {
+                    return rule;
+                }
         }
-        
+
         return null;
     }
     // </editor-fold>
@@ -564,14 +574,13 @@ public class WrapperTrainer {
     // </editor-fold>
     public boolean testRule(Rule rule) {
         //could change so have a discrepency value where can accept if gets 4/5 right or something?
-        for (int i = 0; i < htmlDocs.size(); i++) {
+        for (int i = 0; i < indTrainingData.size(); i++) {
             String expectedValue = indTrainingData.get(i).getFeatureMap().get(rule.getFeatureName());
 
             if (expectedValue != "") {
                 String value = wrapperTester.getValFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin(), minMaxPairs.get(i).getMax()), rule);
-                
-                //test the value only within specified minimum maximum range, is then the head/tails job to ensure only ever get this range
 
+                //test the value only within specified minimum maximum range, is then the head/tails job to ensure only ever get this range
                 //compare to actual value
                 if (!value.equals(expectedValue)) {
                     return false;
@@ -580,75 +589,102 @@ public class WrapperTrainer {
         }
         return true;
     }
-    
-    public boolean testListRule(Rule rule, boolean testOC){
+
+    public boolean testListRule(Rule rule, boolean testOC, boolean isInternal) {
         for (int i = 0; i < htmlDocs.size(); i++) {
+            //if internal then only want to check last html file loaded
+            if(i != htmlDocs.size() - 1) continue;
+            
             List<String> expectedValue = listTrainingData.get(i).getUrlList();
 
             if (expectedValue != null && expectedValue.size() > 0) {
-                List<String> actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin(), minMaxPairs.get(i).getMax()), rule, testOC);
-                
-                if(actualValue.isEmpty() || actualValue.size() != expectedValue.size()) return false;
-                
+                List<String> actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin() - NUM_OF_CHARS, minMaxPairs.get(i).getMax() + NUM_OF_CHARS), rule, testOC);
+
+                if (actualValue.isEmpty() || actualValue.size() != expectedValue.size()) {
+                    return false;
+                }
+
                 for (int j = 0; j < actualValue.size(); j++) {
-                    if(!expectedValue.contains(actualValue.get(j).trim())) return false;
+                    if (!expectedValue.contains(actualValue.get(j).trim())) {
+                        return false;
+                    }
                 }
             }
         }
         return true;
     }
 
-   
-    
     private Rule generateOC(Rule rule, List<String> openList, List<String> closeList) {
         String open = "";
         String close = "";
-        
+
         open = identifyCommonSubStrOfNStr(openList);
         close = identifyCommonSubStrOfNStr(closeList);
-        
+
         rule.setOpen(open);
         rule.setClose(close);
         int count = 0;
-        while(!testListRule(rule, true)){
+        while (!testListRule(rule, true, false)) {
             for (int i = 0; i < openList.size(); i++) {
                 openList.set(i, openList.get(i).replace(open, ""));
                 closeList.set(i, closeList.get(i).replace(close, ""));
             }
-            
+
             open = identifyCommonSubStrOfNStr(openList);
             close = identifyCommonSubStrOfNStr(closeList);
-        
+
             rule.setOpen(open);
             rule.setClose(close);
-            
-            if(count == 5) return null;
+
+            if (count == 5) {
+                return null;
+            }
             count++;
         }
-        
+
         return rule;
     }
-    
-    private Wrapper generateHT(List<String> headList, List<String> tailList, Wrapper initialWrapper){
-       Wrapper wrapper = initialWrapper;
-        
+
+    private boolean testRules(Wrapper wrapper) {
+
+        for (int i = 0; i < wrapper.getRuleList().size(); i++) {
+            if (wrapper.getRule(i).getFeatureName() == FeatureEnum.URL) {
+                if (!testListRule(wrapper.getRule(i), true, false)) {
+                    return false;
+                }
+            } else {
+                if (!testRule(wrapper.getRule(i))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private Wrapper generateHT(List<String> headList, List<String> tailList, Wrapper initialWrapper) {
+        Wrapper wrapper = initialWrapper;
+
         wrapper.setHead(identifyCommonSubStrOfNStr(headList));
         wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
-        
+
+        //can make this better by doing head and then testing, then tail after, using indexes for min and max to help
         int count = 0;
-        while(!testListRule(rule, true)){
+        while (!testRules(initialWrapper)) {
             for (int i = 0; i < headList.size(); i++) {
                 headList.set(i, headList.get(i).replace(wrapper.getHead(), ""));
                 tailList.set(i, tailList.get(i).replace(wrapper.getTail(), ""));
             }
-            
+
             wrapper.setHead(identifyCommonSubStrOfNStr(headList));
             wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
-            
-            if(count == 5) return initialWrapper;
-            count++; 
+
+            if (count == 5) {
+                return initialWrapper;
+            }
+            count++;
         }
-        
+
         return wrapper;
     }
 
@@ -656,7 +692,6 @@ public class WrapperTrainer {
 
         //maybe have to discount any whitespace in these from the count so still icnluded in string but not in the length
         //so if a shorter string that contains no whitespace is found is more likely to be a better option
-        
         String commonStr = "";
         String smallStr = "";
 
@@ -693,7 +728,5 @@ public class WrapperTrainer {
 
         return commonStr;
     }
-
-    
 
 }
