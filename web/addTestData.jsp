@@ -15,17 +15,14 @@
         <h1>Add test data from file or select existing data from database</h1>
         Select from database: <br>
         <form action='TestDataFromDB.do' method='POST'>
-            Data type: <input type="radio" checked="true" name="type" value="0"> Individual
-            <input type="radio" name="type" value="1"> List<br>
             Domain: <input type='text' name='domain'><br><br>
             <input type='submit' name='upload_btn' value='upload'>
         </form>
         <br><br><br><br><br><br>
         Add file: <br>
         <form action='AddTrainingData.do' method='POST' enctype="multipart/form-data">
-            Data type: <input type="radio" name="type" value="0"> Individual
-            <input type="radio" name="type" value="1"> List<br>
-            <input type='file' name='file'><br><br>
+            Individual file: <input type='file' name='file'><br><br>
+            List file: <input type='file' name='listFile'><br><br>
             <input type="hidden" name="action" value="test">
             <input type='submit' name='upload_btn' value='upload'>
         </form>

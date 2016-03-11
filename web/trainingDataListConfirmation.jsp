@@ -4,7 +4,7 @@
     Author     : Kyran
 --%>
 
-<%@page import="Models.TicketListFeatures"%>
+<%@page import="Models.Structures.TicketListFeatures"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -26,18 +26,26 @@
         </form>
         <br>
         <table  border="1" style="width:50%">
+            <%
+                List<TicketListFeatures> trainingData = (List<TicketListFeatures>) request.getServletContext().getAttribute("trainingListData");
+                int maxLinks = -1;
+                for(int i = 0; i < trainingData.size(); i++) {
+                    if(maxLinks == -1 || maxLinks < trainingData.get(i).getUrlList().size()){
+                         maxLinks = trainingData.get(i).getUrlList().size();
+                    }
+                }
+                %>
             <tr>
                 <th>Domain</th>
                 <th>URL</th> 
                 <th>numOfLinks</th> 
-                <th>Link 1</th> 
-                <th>Link 2</th> 
-                <th>Link 3</th> 
-                <th>Link 4</th> 
-                <th>Link 5</th> 
+                <%
+                    for(int i = 0; i < maxLinks; i++){
+                        out.print("<th>Link " + (i + 1) +"</th> ");
+                    }
+                %>
             </tr>
             <%
-                List<TicketListFeatures> trainingData = (List<TicketListFeatures>) request.getServletContext().getAttribute("trainingListData");
                 for (int i = 0; i < trainingData.size(); i++) {
                     TicketListFeatures ticketList = trainingData.get(i);
             %>
@@ -45,11 +53,11 @@
                 <td> <%= ticketList.getDomain() %> </td>
                 <td> <%= ticketList.getUrl() %> </td>
                 <td> <%= ticketList.getUrlList().size() %> </td>
-                <td> <%= ticketList.getUrlList().size() > 0 ? ticketList.getUrlList().get(0) : "" %> </td>
-                <td> <%= ticketList.getUrlList().size() > 1 ? ticketList.getUrlList().get(1) : "" %> </td>
-                <td> <%= ticketList.getUrlList().size() > 2 ? ticketList.getUrlList().get(2) : "" %> </td>
-                <td> <%= ticketList.getUrlList().size() > 3 ? ticketList.getUrlList().get(3) : "" %> </td>
-                <td> <%= ticketList.getUrlList().size() > 4 ? ticketList.getUrlList().get(4) : "" %> </td>
+                <%
+                    for(int j = 0; j < ticketList.getUrlList().size(); j++){
+                        out.print("<td>" + ticketList.getUrlList().get(j) + "</td>");
+                    }
+                %>
             </tr>
             <%
                 } //ending the loop from above

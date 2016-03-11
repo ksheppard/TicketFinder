@@ -4,8 +4,8 @@
     Author     : Kyran
 --%>
 
-<%@page import="Models.FeatureEnum"%>
-<%@page import="Models.SiteFeatures"%>
+<%@page import="Models.Enums.FeatureEnum"%>
+<%@page import="Models.Structures.SiteFeatures"%>
 <%@page import="java.util.List"%>
 <%@page import="java.util.List"%>
 <%@page import="Models.WrapperHelper"%>

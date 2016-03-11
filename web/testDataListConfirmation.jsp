@@ -4,7 +4,7 @@
     Author     : Kyran
 --%>
 
-<%@page import="Models.TicketListFeatures"%>
+<%@page import="Models.Structures.TicketListFeatures"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -24,6 +24,9 @@
             <input type="hidden" name="type" value="1">
             <input type="submit" value="Continue">
         </form>
+        <br>
+        <br>
+        
         <br>
         <table  border="1" style="width:50%">
             <tr>
