@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Structures.TicketListFeatures;
 import Models.Structures.SiteFeatures;
 import java.io.BufferedReader;
 import java.io.InputStream;

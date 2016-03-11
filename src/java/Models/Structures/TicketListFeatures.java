@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Models;
+package Models.Structures;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,7 @@ import java.util.List;
  * @author Kyran
  */
 public class TicketListFeatures {
+    private int id;
     private String domain;
     private String url;
     private List<String> urlList;
@@ -21,7 +22,17 @@ public class TicketListFeatures {
         this.domain = domain;
         this.url = url;
         this.urlList = urlList;
+        this.id = id;
     }
+
+    public TicketListFeatures(int id, String domain, String url) {
+        this.id = id;
+        this.domain = domain;
+        this.url = url;
+        urlList = new ArrayList<>();
+    }
+    
+    
 
     public TicketListFeatures(String line) {
         
@@ -40,7 +51,21 @@ public class TicketListFeatures {
         
         
     }
+    
+    public void addUrl(String link){
+        urlList.add(link);
+    }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    
+    
     public String getDomain() {
         return domain;
     }

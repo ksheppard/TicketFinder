@@ -18,6 +18,7 @@ import java.util.Map;
  */
 public class SiteFeatures {
 
+    private int id;
     private String domain;
     private String url;
     private Map<FeatureEnum, String> featureMap;
@@ -41,10 +42,20 @@ public class SiteFeatures {
 
     }
 
-    public SiteFeatures(String domain, String url) {
+    public SiteFeatures(String domain, String url, int id) {
         this.domain = domain;
         this.url = url;
+        this.id = id;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
     
     
     
@@ -82,5 +93,9 @@ public class SiteFeatures {
         for (FeatureEnum feat : FeatureEnum.values()) {
             featureMap.put(feat, "");
         }
+    }
+
+    public void addFeature(FeatureEnum name, String val) {
+        featureMap.put(name, val);
     }
 }

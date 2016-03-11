@@ -7,7 +7,7 @@ package Controllers;
 
 import Models.FileReader;
 import Models.Structures.SiteFeatures;
-import Models.TicketListFeatures;
+import Models.Structures.TicketListFeatures;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -45,37 +45,68 @@ public class AddTrainingData extends HttpServlet {
         InputStream fileContent = filePart.getInputStream();
 
         FileReader fr = new FileReader();
-        int type = Integer.parseInt(request.getParameter("type"));
+        
+        String action = request.getParameter("action");
 
-        if (type == 0) {
-            //if individual pages
-            List<SiteFeatures> list = fr.readIndDataFromFile(fileContent);
-            request.getServletContext().setAttribute("trainingIndData", list);
-
-            String action = request.getParameter("action");
-            if (action.equals("train")) {
+        if (action.equals("train")) {
+            int type = Integer.parseInt(request.getParameter("type"));
+            
+            if (type == 0) {
+                List<SiteFeatures> list = fr.readIndDataFromFile(fileContent);
+                request.getServletContext().setAttribute("trainingIndData", list);
                 RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
                 view.forward(request, response);
             } else {
-                RequestDispatcher view = request.getRequestDispatcher("testDataConfirmation.jsp");
-                view.forward(request, response);
-            }
-        } else {
-            //if list of pages
-            
-            List<TicketListFeatures> list = fr.readListDataFromFile(fileContent);
-            request.getServletContext().setAttribute("trainingListData", list);
-
-            String action = request.getParameter("action");
-            if (action.equals("train")) {
+                List<TicketListFeatures> list = fr.readListDataFromFile(fileContent);
+                request.getServletContext().setAttribute("trainingListData", list);
                 RequestDispatcher view = request.getRequestDispatcher("trainingDataListConfirmation.jsp");
                 view.forward(request, response);
-            } else {
-                RequestDispatcher view = request.getRequestDispatcher("testDataListConfirmation.jsp");
-                view.forward(request, response);
             }
+        }
+        else{
+            Part listFilePart = request.getPart("listFile"); // Retrieves <input type="file" name="file">
+            String listFileName = listFilePart.getSubmittedFileName();
+            InputStream listFileContent = listFilePart.getInputStream();
+            
+            List<SiteFeatures> siteList = fr.readIndDataFromFile(fileContent);
+            request.getServletContext().setAttribute("trainingIndData", siteList);
+            
+            List<TicketListFeatures> linkList = fr.readListDataFromFile(listFileContent);
+            request.getServletContext().setAttribute("trainingListData", linkList);
+            
+            RequestDispatcher view = request.getRequestDispatcher("testDataConfirmation.jsp");
+            view.forward(request, response);
             
         }
+        
+//        if (type == 0) {
+//            //if individual pages
+//            List<SiteFeatures> list = fr.readIndDataFromFile(fileContent);
+//            request.getServletContext().setAttribute("trainingIndData", list);
+//
+//            if (action.equals("train")) {
+//                RequestDispatcher view = request.getRequestDispatcher("trainingDataConfirmation.jsp");
+//                view.forward(request, response);
+//            } else {
+//                RequestDispatcher view = request.getRequestDispatcher("testDataConfirmation.jsp");
+//                view.forward(request, response);
+//            }
+//        } else {
+//            //if list of pages
+//
+//            List<TicketListFeatures> list = fr.readListDataFromFile(fileContent);
+//            request.getServletContext().setAttribute("trainingListData", list);
+//
+//            String action = request.getParameter("action");
+//            if (action.equals("train")) {
+//                RequestDispatcher view = request.getRequestDispatcher("trainingDataListConfirmation.jsp");
+//                view.forward(request, response);
+//            } else {
+//                RequestDispatcher view = request.getRequestDispatcher("testDataListConfirmation.jsp");
+//                view.forward(request, response);
+//            }
+//
+//        }
 
     }
 

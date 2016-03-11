@@ -52,7 +52,7 @@ public class WrapperDB {
         return new Wrapper(id, domainVal, head, tail, ruleList, type);
     }
     
-    public List<Rule> getRules(int id){
+    private List<Rule> getRules(int id){
         //return all rules from a specified domain
         //for use in testing system and for user queries
         List<Rule> ruleList = new ArrayList<Rule>();
@@ -128,7 +128,7 @@ public class WrapperDB {
         return newString;
     }
     
-    public boolean addRules(String domain, List<Rule> ruleList){
+    private boolean addRules(String domain, List<Rule> ruleList){
         //to be used for training the system
         
         try {

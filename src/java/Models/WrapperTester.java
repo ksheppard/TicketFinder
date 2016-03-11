@@ -11,6 +11,7 @@ import Models.Structures.Wrapper;
 import Models.Structures.Rule;
 import Models.Structures.TestResult;
 import Models.Enums.FeatureEnum;
+import Models.Structures.TicketListFeatures;
 import SQL.TestDataDB;
 import SQL.WrapperDB;
 import java.sql.Connection;
@@ -56,7 +57,7 @@ public class WrapperTester {
             testResultList.add(testIndWrapper( wrapperMap.get(sf.getDomain()), wpManager.getHTML(sf.getUrl()), sf));
         }
 
-        testDataDB.addTestData(siteFeaturesList);
+        boolean success = testDataDB.addIndTestData(siteFeaturesList);
         
         return testResultList;
     }
@@ -111,8 +112,12 @@ public class WrapperTester {
         return wrapperExecutor.getValFromRule(html, rule);
     }
     
-    public List<String> getListValsFromRule(String html, Rule rule, boolean testOC) {
-        return wrapperExecutor.getListValsFromRule(html, rule, testOC);
+    public List<String> getListValsFromRule(String html, Rule rule, boolean testOC, boolean testOpenOnly) {
+        return wrapperExecutor.getListValsFromRule(html, rule, testOC, testOpenOnly);
+    }
+
+    public List<TestResult> performListTests(List<TicketListFeatures> listTestData) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

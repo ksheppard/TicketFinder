@@ -9,6 +9,9 @@ package Models.Enums;
  *
  * @author Kyran
  */
-public class SortingOptionsEnum {
-    
+public enum SortingOptionsEnum {
+    Az,
+    Date,
+    Distance,
+    Za
 }

@@ -5,6 +5,7 @@
  */
 package Models;
 
+import Models.Structures.TicketListFeatures;
 import Models.Structures.SiteFeatures;
 import Models.Structures.Wrapper;
 import Models.Structures.Rule;
@@ -34,7 +35,7 @@ public class WrapperTrainer {
 
     String html;
     private final int NUM_OF_CHARS = 150;
-    private final int HEAD_TAIL_CHARS = 600;
+    private final int HEAD_TAIL_CHARS = 1000;
     private final char[] CHARS_TO_CHECK = {'[', '(', '{', '<', '\"', '\'', '>', '}', ')', ']'}; //if change need to change methods that use
 
     List<String> htmlDocs = new ArrayList<>();
@@ -46,11 +47,13 @@ public class WrapperTrainer {
 
     private List<MinMaxPair> minMaxPairs;
 
+    private final int MULTIPLIER = 2;
+
     public WrapperTrainer(Connection conn) {
-        wrapperDB = new WrapperDB(conn); 
+        wrapperDB = new WrapperDB(conn);
     }
 
-    public void trainIndividual(List<SiteFeatures> trainingData) {
+    public boolean trainIndividual(List<SiteFeatures> trainingData) {
         this.indTrainingData = trainingData;
         List<Wrapper> wrapperList = new ArrayList<Wrapper>();
         minMaxPairs = new ArrayList<MinMaxPair>();
@@ -62,12 +65,16 @@ public class WrapperTrainer {
             wrapperList.add(generateIndWrapper(trainingData.get(i)));
         }
         Wrapper wrapper = aggregateWrappers(wrapperList);
-        wrapper.setType(0);
-        wrapperDB.addWrapper(wrapper);
+        if (wrapper.getRuleList().size() > 0) {
+            wrapper.setType(0);
+            return wrapperDB.addWrapper(wrapper);
+        } else {
+            return false;
+        }
         //save into db at end
     }
 
-    public void trainLists(List<TicketListFeatures> trainingData) {
+    public boolean trainLists(List<TicketListFeatures> trainingData) {
         this.listTrainingData = trainingData;
         minMaxPairs = new ArrayList<MinMaxPair>();
 
@@ -79,8 +86,12 @@ public class WrapperTrainer {
             wrapperList.add(generateListWrapper(trainingData.get(i)));
         }
         Wrapper wrapper = aggregateWrappers(wrapperList);
-        wrapper.setType(1);
-        wrapperDB.addWrapper(wrapper);
+        if (wrapper.getRuleList().size() > 0) {
+            wrapper.setType(1);
+            return wrapperDB.addWrapper(wrapper);
+        } else {
+            return false;
+        }
     }
 
     private Wrapper generateIndWrapper(SiteFeatures feature) {
@@ -235,8 +246,8 @@ public class WrapperTrainer {
         Rule rule = aggregateRuleList(tempRuleList, true);
 
         if (rule != null) {
-            rule.setOpen(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0, min));
-            rule.setClose(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));
+            rule.setOpen(html.substring(min - HEAD_TAIL_CHARS * MULTIPLIER > 0 ? min - HEAD_TAIL_CHARS * MULTIPLIER : 0, min));
+            rule.setClose(html.substring(max, max + HEAD_TAIL_CHARS * MULTIPLIER > html.length() ? html.length() - 1 : max + HEAD_TAIL_CHARS * MULTIPLIER));
             ruleList.add(rule);
         }
 
@@ -410,7 +421,7 @@ public class WrapperTrainer {
 
         if (!internalAgg) {
             if (ruleList.size() > 0 && ruleList.get(0).getFeatureName() == FeatureEnum.URL) {
-                if (testListRule(rule, false, internalAgg)) {
+                if (testListRule(rule, false, internalAgg, false)) {
                     return generateOC(rule, openList, closeList);
                 }
 
@@ -420,9 +431,9 @@ public class WrapperTrainer {
                 }
             }
         } else {
-            if (testListRule(rule, false, internalAgg)) {
-                    return rule;
-                }
+            if (testListRule(rule, false, internalAgg, false)) {
+                return rule;
+            }
         }
 
         return null;
@@ -590,15 +601,27 @@ public class WrapperTrainer {
         return true;
     }
 
-    public boolean testListRule(Rule rule, boolean testOC, boolean isInternal) {
+    public boolean testListRule(Rule rule, boolean testOC, boolean isInternal, boolean testOpenOnly) {
         for (int i = 0; i < htmlDocs.size(); i++) {
             //if internal then only want to check last html file loaded
-            if(i != htmlDocs.size() - 1) continue;
-            
+            if (isInternal && i != htmlDocs.size() - 1) {
+                continue;
+            }
+
             List<String> expectedValue = listTrainingData.get(i).getUrlList();
 
             if (expectedValue != null && expectedValue.size() > 0) {
-                List<String> actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin() - NUM_OF_CHARS, minMaxPairs.get(i).getMax() + NUM_OF_CHARS), rule, testOC);
+
+                List<String> actualValue;
+                if (!testOC) {
+                    actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin() - NUM_OF_CHARS, minMaxPairs.get(i).getMax() + NUM_OF_CHARS), rule, testOC, testOpenOnly);
+                } else {
+                    if (testOpenOnly) {
+                        actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i).substring(0, minMaxPairs.get(i).getMax() + NUM_OF_CHARS), rule, testOC, testOpenOnly);
+                    } else {
+                        actualValue = wrapperTester.getListValsFromRule(htmlDocs.get(i), rule, testOC, testOpenOnly);
+                    }
+                }
 
                 if (actualValue.isEmpty() || actualValue.size() != expectedValue.size()) {
                     return false;
@@ -617,31 +640,83 @@ public class WrapperTrainer {
     private Rule generateOC(Rule rule, List<String> openList, List<String> closeList) {
         String open = "";
         String close = "";
+        List<String> tempOpenList;
+        List<String> tempCloseList;
 
-        open = identifyCommonSubStrOfNStr(openList);
-        close = identifyCommonSubStrOfNStr(closeList);
-
-        rule.setOpen(open);
-        rule.setClose(close);
         int count = 0;
-        while (!testListRule(rule, true, false)) {
+        for (int j = 0; j < MULTIPLIER; j++) {
+            count = 0;
+            tempOpenList = new ArrayList<>();
+            open = "";
+
             for (int i = 0; i < openList.size(); i++) {
-                openList.set(i, openList.get(i).replace(open, ""));
-                closeList.set(i, closeList.get(i).replace(close, ""));
+                String tempOpen = openList.get(i);
+                int min = tempOpen.length() - (j * HEAD_TAIL_CHARS) - HEAD_TAIL_CHARS;
+                int max = tempOpen.length() - (j * HEAD_TAIL_CHARS);
+                if (max < 0) {
+                    return null;
+                }
+                tempOpenList.add(tempOpen.substring(min < 0 ? 0 : min, max));
             }
 
-            open = identifyCommonSubStrOfNStr(openList);
-            close = identifyCommonSubStrOfNStr(closeList);
+            do {
+                count++;
+                if (count == 10) {
+                    break;
+                }
 
-            rule.setOpen(open);
-            rule.setClose(close);
+                if (open != "") {
+                    for (int i = 0; i < tempOpenList.size(); i++) {
+                        tempOpenList.set(i, tempOpenList.get(i).replace(open, ""));
+                    }
+                }
 
-            if (count == 5) {
-                return null;
+                open = identifyCommonSubStrOfNStr(tempOpenList);
+                rule.setOpen(open);
+
+            } while (!testListRule(rule, true, false, true));
+
+            if (count != 10) {
+                break;
             }
-            count++;
         }
+        //do open first then close next
 
+        for (int j = 0; j < MULTIPLIER; j++) {
+            count = 0;
+            tempCloseList = new ArrayList<>();
+            close = "";
+
+            for (int i = 0; i < closeList.size(); i++) {
+                String tempClose = closeList.get(i);
+                int min = j * HEAD_TAIL_CHARS;
+                int max = j * HEAD_TAIL_CHARS + HEAD_TAIL_CHARS;
+                if (min > tempClose.length()) {
+                    return null;
+                }
+                tempCloseList.add(tempClose.substring(min, max < tempClose.length() ? max : tempClose.length() - 1));
+            }
+
+            do {
+                count++;
+                if (count == 10) {
+                    break;
+                }
+
+                if (close != "") {
+                    for (int i = 0; i < tempCloseList.size(); i++) {
+                        tempCloseList.set(i, tempCloseList.get(i).replace(close, ""));
+                    }
+                }
+
+                close = identifyCommonSubStrOfNStr(tempCloseList);
+                rule.setClose(close);
+
+            } while (!testListRule(rule, true, false, false));
+            if (count != 10) {
+                break;
+            }
+        }
         return rule;
     }
 
@@ -649,7 +724,7 @@ public class WrapperTrainer {
 
         for (int i = 0; i < wrapper.getRuleList().size(); i++) {
             if (wrapper.getRule(i).getFeatureName() == FeatureEnum.URL) {
-                if (!testListRule(wrapper.getRule(i), true, false)) {
+                if (!testListRule(wrapper.getRule(i), true, false, false)) {
                     return false;
                 }
             } else {

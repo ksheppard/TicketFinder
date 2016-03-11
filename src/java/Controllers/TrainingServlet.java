@@ -6,7 +6,7 @@
 package Controllers;
 
 import Models.Structures.SiteFeatures;
-import Models.TicketListFeatures;
+import Models.Structures.TicketListFeatures;
 import Models.WrapperHelper;
 import Models.WrapperTrainer;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.util.List;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -48,18 +49,22 @@ public class TrainingServlet extends HttpServlet {
         int type = Integer.parseInt(request.getParameter("type"));
         WrapperTrainer wt = new WrapperTrainer((Connection) request.getServletContext().getAttribute("connection"));
         
+        boolean success;
+        
         if(type == 0){
             List<SiteFeatures> list = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingIndData");
             
-            wt.trainIndividual(list);
+            success = wt.trainIndividual(list);
         }
         else{
             List<TicketListFeatures> list = (List<TicketListFeatures>) request.getServletContext().getAttribute("trainingListData");
             
-            wt.trainLists(list);
+            success = wt.trainLists(list);
         }
         
-            
+        request.setAttribute("success", success);
+        RequestDispatcher view = request.getRequestDispatcher("trainingResult.jsp");
+        view.forward(request, response);    
         
     }
 

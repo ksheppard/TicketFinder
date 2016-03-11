@@ -94,18 +94,20 @@ public class WrapperExecutor {
                     //have found it and can set the end index
                     indexEnd = innerPointer + split[split.length - 1].length() - 1;
                     break;
-                } else break;
+                } else {
+                    break;
+                }
             }
         }
         return indexStart == -1 || indexEnd == -1 ? "" : html.substring(indexStart, indexEnd);
     }
 
-    public List<String> getListValsFromRule(String htmlFile, Rule rule, boolean testOC) {
+    public List<String> getListValsFromRule(String htmlFile, Rule rule, boolean testOC, boolean testOpenOnly) {
         //use this when testing and executing but run the head and tail through first so only passing substring of the html
         int indexStart = -1;
         int indexEnd = -1;
 
-        String html = testOC ? extractOC(htmlFile, rule) : htmlFile;
+        String html = testOC ? extractOC(htmlFile, rule, testOpenOnly) : htmlFile;
 
         List<String> results = new ArrayList<>();
 
@@ -124,6 +126,7 @@ public class WrapperExecutor {
                 int pointer = counter;
                 while (true) {
                     pointer = html.indexOf(split[0], pointer);
+                    if(pointer == -1) break;
                     boolean location = true;
                     int innerPointer = pointer;
                     //could do differently to use the max length of an unknown entity eg 30 from method where set the |#| IMPORTANT IF DOESNT WORK
@@ -138,12 +141,15 @@ public class WrapperExecutor {
                         //have found it and can set the end index
                         indexStart = innerPointer + split[split.length - 1].length() + 1;
                         break;
+                    } else {
+                        break;
                     }
-                    else break;
                 }
             }
-            
-            if(indexStart == -1) break;
+
+            if (indexStart == -1) {
+                break;
+            }
             //doesnt need to be nested as is repeated in both
             if (!rule.getRight().contains(MODIFIER_STRING)) {
                 indexEnd = html.indexOf(rule.getRight(), indexStart);
@@ -179,7 +185,7 @@ public class WrapperExecutor {
         return results;
     }
 
-    private String extractOC(String html, Rule rule) {
+    private String extractOC(String html, Rule rule, boolean testOpenOnly) {
 
         int indexStart = -1;
         int indexEnd = -1;
@@ -188,9 +194,14 @@ public class WrapperExecutor {
         if (indexStart == -1) {
             return html;
         }
-        indexEnd = html.indexOf(rule.getClose(), indexStart);
-        if (indexEnd == -1) {
-            return html;
+
+        if (!testOpenOnly) {
+            indexEnd = html.indexOf(rule.getClose(), indexStart);
+            if (indexEnd == -1) {
+                return html;
+            }
+        } else {
+            indexEnd = html.length() - 1;
         }
 
         return html.substring(indexStart, indexEnd);

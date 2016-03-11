@@ -7,10 +7,12 @@ package Controllers;
 
 import Models.Structures.SiteFeatures;
 import Models.Structures.TestResult;
+import Models.Structures.TicketListFeatures;
 import Models.WrapperTester;
 import SQL.TestDataDB;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -36,13 +38,23 @@ public class TestingServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        List<SiteFeatures> testData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
+        List<SiteFeatures> indTestData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
+        List<TestResult> indResults = new ArrayList<>();
+        List<TicketListFeatures> listTestData = (List<TicketListFeatures>) request.getServletContext().getAttribute("listTrainingData");
+        List<TestResult> listResults = new ArrayList<>();
         
         WrapperTester wt = new WrapperTester((Connection) request.getServletContext().getAttribute("connection"));
-        List<TestResult> results = wt.performIndTests(testData);
         
+        if(indTestData.size() > 0){
+            indResults = wt.performIndTests(indTestData);
+        }
+        if(listResults.size() > 0){
+            listResults = wt.performListTests(listTestData);
+        }
+       
+        request.getServletContext().setAttribute("indTestResults", indResults);
+        request.getServletContext().setAttribute("listTestResults", listResults);
         
-        request.getServletContext().setAttribute("testResults", results);
         
         RequestDispatcher view = request.getRequestDispatcher("viewTestResults.jsp");
         view.forward(request, response);
