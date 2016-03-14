@@ -4,6 +4,7 @@
     Author     : Kyran
 --%>
 
+<%@page import="Models.Structures.User"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -13,7 +14,7 @@
             .button-container form,
             .button-container form div {
                 display: inline;
-
+                margin: 2px;
             }
 
             .button-container button {
@@ -26,46 +27,68 @@
                 horizontal-align: right;
 
             }
+
+            .login-options form div {
+                display: inline;
+                horizontal-align: right;
+
+            }
         </style>
 
-        <script>
-            function validateLogin() {
-                var x = document.forms["loginForm"]["email"].value;
-                if (x == null || x == "") {
-                    alert("Email must be entered");
-                    return false;
-                }
-                var y = document.forms["loginForm"]["password"].value;
-                if (y == null || y == "") {
-                    alert("Password must be entered");
-                    return false;
-                }
-            }
-        </script>
     </head>
     <body>
+        <%
+            User user = request.getSession().getAttribute("user") != null ? (User)request.getSession().getAttribute("user") : null;
+            %>
         <div class="button-container">
-            <form action="index.jsp">
+            <form action="homepage.jsp">
                 <div>
                     <input type="submit" value="Home">
                 </div>
             </form>
-            <form name="loginForm" action="Login.do" onsubmit="return validateLogin()" method="post">
+            <%
+                if(user != null && user.isIsAdmin()){
+            %>
+            <form action="adminHomepage.jsp">
+                <div>
+                    <input type="submit" value="Admin Options">
+                </div>
+            </form>
+            <%
+                }
+                if(user == null){
+            %>
+            <form name="loginForm" action="GoToLogin.do"  method="post">
                 <div class="login-container">
-                    <label for="email">Email Address </label>
-                    <input type="text" name="email" id="email">
-                    <label for="password">Password </label>
-                    <input type="password" name="password" id="password">
+                    <input type="hidden" name="isLogin" id="isLogin" value="true">
                     <input type="submit" value="Login">
                 </div>
             </form>
-
-            <form action="index.jsp">
+            <form name="loginForm" action="GoToLogin.do"  method="post">
                 <div class="login-container">
+                    <input type="hidden" name="isLogin" id="isLogin" value="false">
                     <input type="submit" value="Create Account">
                 </div>
             </form>
+            <%
+                }
+                else{
+            %>
+            Logged in as: <%=user.getEmailAddr()%>
+            <form action="userSettings.jsp">
+                <div class="login-container">
+                    <input type="submit" value="View user settings">
+                </div>
+            </form>
+            <form name="loginForm" action="Logout.do"  method="post">
+                <div class="login-container">
+                    <input type="submit" value="Log out">
+                </div>
+            </form>
+            
+            <%
+                }
+            %>
         </div>
-
     </body>
 </html>

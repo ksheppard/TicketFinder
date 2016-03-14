@@ -2,7 +2,7 @@
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
     <context-param>
         <param-name>Database</param-name>
-        <param-value>dissertationtest</param-value>
+        <param-value>disstestcommand</param-value>
     </context-param>
     <context-param>
         <param-name>User</param-name>
@@ -59,6 +59,10 @@
         <servlet-name>FilterResultsServlet</servlet-name>
         <servlet-class>Controllers.FilterResultsServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>GoToLogin</servlet-name>
+        <servlet-class>Controllers.GoToLogin</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TestingServlet</servlet-name>
         <url-pattern>/test.do</url-pattern>
@@ -102,6 +106,10 @@
     <servlet-mapping>
         <servlet-name>FilterResultsServlet</servlet-name>
         <url-pattern>/filterResults.do</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GoToLogin</servlet-name>
+        <url-pattern>/GoToLogin.do</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
