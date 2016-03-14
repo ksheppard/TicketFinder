@@ -134,6 +134,7 @@ public class WrapperTrainer {
 
             String value = siteFeature.getFeatureMap().get(feature);
             if (value.equals("")) {
+                //if not contained in the testing file
                 continue;
             }
             int index = 0;
@@ -185,6 +186,7 @@ public class WrapperTrainer {
 
         for (int i = 0; i < searchList.size(); i++) {
             WrapperSearchResult searchResult = searchList.get(i);
+            
             Rule rule = new Rule(searchResult.getFeature());
             rule.setLeft(searchResult, searchList, html);
             rule.setRight(searchResult, searchList, html);
@@ -202,8 +204,8 @@ public class WrapperTrainer {
         }
         minMaxPairs.add(new MinMaxPair(min, max));
         //use min and max to set head and tail here
-        wrapper.setHead(html.substring(min - HEAD_TAIL_CHARS > 0 ? min - HEAD_TAIL_CHARS : 0, min)); //need extra validation to check if is above 0?
-        wrapper.setTail(html.substring(max, max + HEAD_TAIL_CHARS > html.length() ? html.length() : max + HEAD_TAIL_CHARS));//need extra validation to check if doesnt exceed length of string 0?
+        wrapper.setHead(html.substring(min - HEAD_TAIL_CHARS * MULTIPLIER > 0 ? min - HEAD_TAIL_CHARS * MULTIPLIER : 0, min)); //need extra validation to check if is above 0?
+        wrapper.setTail(html.substring(max, max + HEAD_TAIL_CHARS * MULTIPLIER > html.length() ? html.length() - 1 : max + HEAD_TAIL_CHARS * MULTIPLIER));//need extra validation to check if doesnt exceed length of string 0?
         //use 1000 as needs much more wiggle room to try and find common ground with other sites
 
         return wrapper;
@@ -298,15 +300,18 @@ public class WrapperTrainer {
         //handles events where creates different number of rules for a feature
         ArrayList<ArrayList<Rule>> listOfRuleLists;
         for (FeatureEnum feature : FeatureEnum.values()) {
-//            if (feature == FeatureEnum.URL) {
-//                continue;
-//            }
+            if (feature == FeatureEnum.Time) {
+                System.out.println("");
+            }
 
             listOfRuleLists = new ArrayList<ArrayList<Rule>>();
             for (int i = 0; i < wrapperList.size(); i++) {
-                listOfRuleLists.add(wrapperList.get(i).filterRules(feature));
+                ArrayList<Rule> temp = wrapperList.get(i).filterRules(feature);
+                if(temp != null && temp.size() > 0){
+                    listOfRuleLists.add(temp);
+                }
             }
-            if (listOfRuleLists.size() > 0) {
+            if (listOfRuleLists.size() > 1) {
                 if (haveSameNumOfRules(listOfRuleLists)) {
                     for (int i = 0; i < listOfRuleLists.get(0).size(); i++) {
                         tempRuleList = new ArrayList<>();
@@ -426,7 +431,7 @@ public class WrapperTrainer {
                 }
 
             } else {
-                if (testRule(rule)) {
+                if (testRule(rule, false, false)) {
                     return rule;
                 }
             }
@@ -583,13 +588,24 @@ public class WrapperTrainer {
     }
 
     // </editor-fold>
-    public boolean testRule(Rule rule) {
+    public boolean testRule(Rule rule, boolean testHT, boolean testHeadOnly) {
         //could change so have a discrepency value where can accept if gets 4/5 right or something?
         for (int i = 0; i < indTrainingData.size(); i++) {
             String expectedValue = indTrainingData.get(i).getFeatureMap().get(rule.getFeatureName());
 
             if (expectedValue != "") {
-                String value = wrapperTester.getValFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin(), minMaxPairs.get(i).getMax()), rule);
+                String value;
+                if(!testHT){
+                    value = wrapperTester.getValFromRule(htmlDocs.get(i).substring(minMaxPairs.get(i).getMin() - NUM_OF_CHARS, minMaxPairs.get(i).getMax() + NUM_OF_CHARS), rule, testHT, testHeadOnly);
+                }
+                else{
+                    if(testHeadOnly){
+                        value = wrapperTester.getValFromRule(htmlDocs.get(i).substring(0, minMaxPairs.get(i).getMax() + NUM_OF_CHARS), rule, testHT, testHeadOnly);
+                    }
+                    else{
+                        value = wrapperTester.getValFromRule(htmlDocs.get(i), rule, testHT, testHeadOnly);
+                    }
+                }
 
                 //test the value only within specified minimum maximum range, is then the head/tails job to ensure only ever get this range
                 //compare to actual value
@@ -720,15 +736,15 @@ public class WrapperTrainer {
         return rule;
     }
 
-    private boolean testRules(Wrapper wrapper) {
+    private boolean testRules(Wrapper wrapper, boolean testHeadOnly) {
 
         for (int i = 0; i < wrapper.getRuleList().size(); i++) {
             if (wrapper.getRule(i).getFeatureName() == FeatureEnum.URL) {
-                if (!testListRule(wrapper.getRule(i), true, false, false)) {
+                if (!testListRule(wrapper.getRule(i), true, false, testHeadOnly)) {
                     return false;
                 }
             } else {
-                if (!testRule(wrapper.getRule(i))) {
+                if (!testRule(wrapper.getRule(i), true, testHeadOnly)) {
                     return false;
                 }
             }
@@ -740,24 +756,104 @@ public class WrapperTrainer {
     private Wrapper generateHT(List<String> headList, List<String> tailList, Wrapper initialWrapper) {
         Wrapper wrapper = initialWrapper;
 
-        wrapper.setHead(identifyCommonSubStrOfNStr(headList));
-        wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
+//        wrapper.setHead(identifyCommonSubStrOfNStr(headList));
+//        wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
+//
+//        //can make this better by doing head and then testing, then tail after, using indexes for min and max to help
+//        int count = 0;
+//        while (!testRules(initialWrapper)) {
+//            for (int i = 0; i < headList.size(); i++) {
+//                headList.set(i, headList.get(i).replace(wrapper.getHead(), ""));
+//                tailList.set(i, tailList.get(i).replace(wrapper.getTail(), ""));
+//            }
+//
+//            wrapper.setHead(identifyCommonSubStrOfNStr(headList));
+//            wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
+//
+//            if (count == 5) {
+//                return initialWrapper;
+//            }
+//            count++;
+//        }
+        
+        String head = "";
+        String tail = "";
+        List<String> tempHeadList;
+        List<String> tempTailList;
 
-        //can make this better by doing head and then testing, then tail after, using indexes for min and max to help
         int count = 0;
-        while (!testRules(initialWrapper)) {
+        for (int j = 0; j < MULTIPLIER; j++) {
+            count = 0;
+            tempHeadList = new ArrayList<>();
+            head = "";
+
             for (int i = 0; i < headList.size(); i++) {
-                headList.set(i, headList.get(i).replace(wrapper.getHead(), ""));
-                tailList.set(i, tailList.get(i).replace(wrapper.getTail(), ""));
+                String tempOpen = headList.get(i);
+                int min = tempOpen.length() - (j * HEAD_TAIL_CHARS) - HEAD_TAIL_CHARS;
+                int max = tempOpen.length() - (j * HEAD_TAIL_CHARS);
+                if (max < 0) {
+                    return null;
+                }
+                tempHeadList.add(tempOpen.substring(min < 0 ? 0 : min, max));
             }
 
-            wrapper.setHead(identifyCommonSubStrOfNStr(headList));
-            wrapper.setTail(identifyCommonSubStrOfNStr(tailList));
+            do {
+                count++;
+                if (count == 20) {
+                    break;
+                }
 
-            if (count == 5) {
-                return initialWrapper;
+                if (head != "") {
+                    for (int i = 0; i < tempHeadList.size(); i++) {
+                        tempHeadList.set(i, tempHeadList.get(i).replace(head, ""));
+                    }
+                }
+
+                head = identifyCommonSubStrOfNStr(tempHeadList);
+                wrapper.setHead(head);
+
+            } while (!testRules(wrapper, true));
+
+            if (count != 20) {
+                break;
             }
-            count++;
+        }
+        //do open first then close next
+
+        for (int j = 0; j < MULTIPLIER; j++) {
+            count = 0;
+            tempTailList = new ArrayList<>();
+            tail = "";
+
+            for (int i = 0; i < tailList.size(); i++) {
+                String tempClose = tailList.get(i);
+                int min = j * HEAD_TAIL_CHARS;
+                int max = j * HEAD_TAIL_CHARS + HEAD_TAIL_CHARS;
+                if (min > tempClose.length()) {
+                    return null;
+                }
+                tempTailList.add(tempClose.substring(min, max < tempClose.length() ? max : tempClose.length() - 1));
+            }
+
+            do {
+                count++;
+                if (count == 20) {
+                    break;
+                }
+
+                if (tail != "") {
+                    for (int i = 0; i < tempTailList.size(); i++) {
+                        tempTailList.set(i, tempTailList.get(i).replace(tail, ""));
+                    }
+                }
+
+                tail = identifyCommonSubStrOfNStr(tempTailList);
+                wrapper.setTail(tail);
+
+            } while (!testRules(wrapper, false));
+            if (count != 20) {
+                break;
+            }
         }
 
         return wrapper;

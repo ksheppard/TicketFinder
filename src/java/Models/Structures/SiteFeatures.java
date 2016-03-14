@@ -46,6 +46,13 @@ public class SiteFeatures {
         this.domain = domain;
         this.url = url;
         this.id = id;
+        this.featureMap = new HashMap<>();
+    }
+    
+    public SiteFeatures(String domain, String url) {
+        this.domain = domain;
+        this.url = url;
+        this.featureMap = new HashMap<>();
     }
 
     public int getId() {

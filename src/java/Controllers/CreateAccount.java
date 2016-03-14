@@ -5,6 +5,7 @@
  */
 package Controllers;
 
+import Models.EmailValidator;
 import Models.Structures.User;
 import SQL.UserDB;
 import java.io.IOException;
@@ -35,6 +36,8 @@ public class CreateAccount extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        EmailValidator emailValidator = new EmailValidator();
+        
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String passwordconf = request.getParameter("passwordconf");
@@ -42,11 +45,13 @@ public class CreateAccount extends HttpServlet {
         String errorMsg = "";
         UserDB userDB = new UserDB((Connection) request.getServletContext().getAttribute("connection"));
 
-        if (userDB.checkExists(email)) {
+        if (!emailValidator.validate(email)) {
+            errorMsg = "Not a valid email address.";
+        }else if (userDB.checkExists(email)) {
             errorMsg = "There is already an account assigned to this email address.";
         } else if (password.length() > 16 || password.length() < 8 || Pattern.matches("\\p{Punct}", password)) { //may be able to do in javascript
             errorMsg = "Password must be 8-16 characters long and must only contains letters or numbers.";
-        } else if (password.equals(passwordconf)) {
+        }  else if (!password.equals(passwordconf)) {
             errorMsg = "Passwords dont match.";
         }
 
@@ -55,22 +60,28 @@ public class CreateAccount extends HttpServlet {
 
             User user = userDB.addUser(email, password);
             if (user != null) {
-                request.getServletContext().setAttribute("user", user);
-                
-                RequestDispatcher view = request.getRequestDispatcher("putsomethinghere");
+                request.getSession().setAttribute("user", user);
+
+                RequestDispatcher view = request.getRequestDispatcher("homepage.jsp");
                 view.forward(request, response);
-            }
-            else{
+            } else {
                 request.setAttribute("errorMsg", "Account creation failed");
-                RequestDispatcher view = request.getRequestDispatcher("putsomethinghere");
+                request.setAttribute("isLogin", "false");
+                request.setAttribute("email", email);
+                request.setAttribute("password", password);
+                request.setAttribute("passwordconf", passwordconf);
+                RequestDispatcher view = request.getRequestDispatcher("login.jsp");
                 view.forward(request, response);
             }
         } else {
             request.setAttribute("errorMsg", errorMsg);
-            RequestDispatcher view = request.getRequestDispatcher("putsomethinghere");
+            request.setAttribute("isLogin", "false");
+            request.setAttribute("email", email);
+            request.setAttribute("password", password);
+            request.setAttribute("passwordconf", passwordconf);
+            RequestDispatcher view = request.getRequestDispatcher("login.jsp");
             view.forward(request, response);
         }
-
 
     }
 

@@ -144,5 +144,9 @@ public class WrapperlessDomainDB {
          
         return list;
     }
+
+    public void addDomains(List<String> wrapperlessDomains) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

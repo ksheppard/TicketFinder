@@ -91,7 +91,7 @@ public class WrapperTester {
             if (filteredRules != null) {
                 //go through all rules saved for each feature
                 for (int i = 0; i < filteredRules.size(); i++) {
-                    String val = getValFromRule(html, filteredRules.get(i));
+                    String val = getValFromRule(html, filteredRules.get(i), true, false);
                     //if finds a value or is last rule then input result, else go to next rule
                     if(val != "" || i == filteredRules.size() - 1){
                         testFeatureList.add(new TestFeature(feature, siteFeatures.getValue(feature), val));
@@ -108,8 +108,8 @@ public class WrapperTester {
     }
 
     //WILL BE BROKEN UP AND MOVED INTO WRAPPER EXECUTOR?
-    public String getValFromRule(String html, Rule rule) {
-        return wrapperExecutor.getValFromRule(html, rule);
+    public String getValFromRule(String html, Rule rule, boolean testHT, boolean testHeadOnly) {
+        return wrapperExecutor.getValFromRule(html, rule, testHT, testHeadOnly);
     }
     
     public List<String> getListValsFromRule(String html, Rule rule, boolean testOC, boolean testOpenOnly) {

@@ -34,12 +34,12 @@ public class WrapperDB {
         int id = -1;
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from headtail WHERE domain = '%s' AND `type`= %b", domain, type));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from Wrapper WHERE `Domain` = '%s' AND `Type`= %b", domain, type));
             while (rs.next()) {
-                id = rs.getInt("id");
-                domainVal = rs.getString("domain").trim();
-                head = SQLtoString(rs.getString("head").trim());
-                tail = SQLtoString(rs.getString("tail").trim());
+                id = rs.getInt("Id");
+                domainVal = rs.getString("Domain").trim();
+                head = SQLtoString(rs.getString("Head").trim());
+                tail = SQLtoString(rs.getString("Tail").trim());
                 ruleList = getRules(id);
             }
             
@@ -52,20 +52,50 @@ public class WrapperDB {
         return new Wrapper(id, domainVal, head, tail, ruleList, type);
     }
     
+    public List<Wrapper> getWrappers(String domain){
+        List<Wrapper> wrapperList = new ArrayList<>();
+        List<Rule> ruleList = null;
+        String domainVal = null;
+        String head = null;
+        String tail = null;
+        int type = -1;
+        int id = -1;
+        try {
+            Statement state = conn.createStatement();
+            ResultSet rs = state.executeQuery(String.format("SELECT * from Wrapper WHERE `Domain` = '%s' AND `Type`= %b", domain, type));
+            while (rs.next()) {
+                id = rs.getInt("Id");
+                domainVal = rs.getString("Domain").trim();
+                head = SQLtoString(rs.getString("Head").trim());
+                tail = SQLtoString(rs.getString("Tail").trim());
+                ruleList = getRules(id);
+                type = rs.getInt("Type");
+                wrapperList.add(new Wrapper(id, domainVal, head, tail, ruleList, type));
+            }
+            
+            state.close();
+            rs.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error: " + e);
+        }
+        return wrapperList;
+    }
+    
     private List<Rule> getRules(int id){
         //return all rules from a specified domain
         //for use in testing system and for user queries
         List<Rule> ruleList = new ArrayList<Rule>();
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from extractionrules WHERE `id` = %d", id));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from extractionrules WHERE `W_Id` = %d", id));
             while (rs.next()) {
                 //domain is column 1
-                FeatureEnum feature = FeatureEnum.valueOf(rs.getString("featureName").trim());
-                String open = SQLtoString(rs.getString("open").trim());
-                String close = SQLtoString(rs.getString("close").trim());
-                String left = SQLtoString(rs.getString("leftVal").trim());
-                String right = SQLtoString(rs.getString("rightVal").trim());
+                FeatureEnum feature = FeatureEnum.valueOf(rs.getString("FeatureName").trim());
+                String open = SQLtoString(rs.getString("Open").trim());
+                String close = SQLtoString(rs.getString("Close").trim());
+                String left = SQLtoString(rs.getString("LeftVal").trim());
+                String right = SQLtoString(rs.getString("RightVal").trim());
                 ruleList.add(new Rule(feature, open, close, left, right));
             }
 
@@ -85,14 +115,14 @@ public class WrapperDB {
         
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("INSERT INTO headtail (`domain`, `head`, `tail`, `type`) VALUES ('%s','%s','%s',%d)"
+            state.executeUpdate(String.format("INSERT INTO wrapper (`Domain`, `Head`, `Tail`, `Type`) VALUES ('%s','%s','%s',%d)"
                     ,wrapper.getDomain(), stringToSQL(wrapper.getHead()), stringToSQL(wrapper.getTail()), wrapper.getType()));
             state.close();
 
         } catch (SQLException e) {
             return false;
         }
-        return addRules(wrapper.getDomain(), wrapper.getRuleList());
+        return addRules(wrapper.getDomain(), wrapper.getRuleList(), getWrapper(wrapper.getDomain(), wrapper.getType()).getId());
     }
     
     private String stringToSQL(String string){
@@ -128,7 +158,7 @@ public class WrapperDB {
         return newString;
     }
     
-    private boolean addRules(String domain, List<Rule> ruleList){
+    private boolean addRules(String domain, List<Rule> ruleList, int id){
         //to be used for training the system
         
         try {
@@ -136,8 +166,8 @@ public class WrapperDB {
             String updateString = "INSERT INTO extractionrules VALUES ";
             for (int i = 0; i < ruleList.size(); i++) {
                 Rule rule = ruleList.get(i);
-                updateString += String.format("('%s','%s','%s','%s','%s','%s')", domain, rule.getFeatureName(), stringToSQL(rule.getOpen())
-                        , stringToSQL(rule.getClose()), stringToSQL(rule.getLeft()), stringToSQL(rule.getRight()));
+                updateString += String.format("('%s','%s','%s','%s','%s','%d')", rule.getFeatureName(), stringToSQL(rule.getOpen())
+                        , stringToSQL(rule.getClose()), stringToSQL(rule.getLeft()), stringToSQL(rule.getRight()), id);
                 if(i < ruleList.size() - 1) updateString += ",";
             }
             state.executeUpdate(updateString);
@@ -172,9 +202,9 @@ public class WrapperDB {
         try {
             Statement state = conn.createStatement();
             state.executeUpdate(String.format(
-                    "DELETE FROM headtail WHERE `id`='%d'", id));
+                    "DELETE FROM Wrapper WHERE `Id`='%d'", id));
             state.executeUpdate(String.format(
-                    "DELETE FROM extractionrules WHERE `id`='%d'", id));
+                    "DELETE FROM ExtractionRules WHERE `W_Id`='%d'", id));
             state.close();
 
         } catch (SQLException e) {
@@ -182,5 +212,16 @@ public class WrapperDB {
             return false;
         }
         return true;
+    }
+
+    public List<Wrapper> getWrappersByType(int type, Object[] domains) {
+        List<Wrapper> wrapperList = new ArrayList<>();
+        Wrapper w;
+        for (int i = 0; i < domains.length; i++) {
+            w = getWrapper(domains[i].toString().trim(), type);
+            if(w != null) wrapperList.add(w);
+        }
+        
+        return wrapperList;
     }
 }

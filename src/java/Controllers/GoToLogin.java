@@ -5,11 +5,8 @@
  */
 package Controllers;
 
-import Models.Structures.User;
-import SQL.UserDB;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Kyran
  */
-public class Login extends HttpServlet {
+public class GoToLogin extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,28 +30,14 @@ public class Login extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
-
-        String errorMsg = "";
-        UserDB userDB = new UserDB((Connection) request.getServletContext().getAttribute("connection"));
-
-        User user = userDB.loginUser(email, password);
-
-        if (user == null) {
-            request.setAttribute("errorMsg", "Login failed, check that your login details are correct!");
-            request.setAttribute("isLogin", "true");
-            request.setAttribute("email", email);
-            request.setAttribute("password", password);
-            RequestDispatcher view = request.getRequestDispatcher("login.jsp");
-            view.forward(request, response);
-        } else {
-            request.getSession().setAttribute("user", user);
-            
-            RequestDispatcher view = request.getRequestDispatcher("homepage.jsp");
-            view.forward(request, response);
-        }
+        
+        boolean isLogin = Boolean.parseBoolean(request.getParameter("isLogin"));
+        
+        request.setAttribute("isLogin", isLogin);
+        
+        RequestDispatcher view = request.getRequestDispatcher("login.jsp");
+        view.forward(request, response);
+        
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

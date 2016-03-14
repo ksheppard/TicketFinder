@@ -74,9 +74,9 @@ public class GoogleSearch {
         List<String> urlList = new ArrayList<>();
         
         try {
-            String google = "http://www.google.com/search?q=";
+            String google = "http://www.google.com/search?num=30&q=";
             String charset = "UTF-8";
-            String userAgent = "ExampleBot 1.0 (+http://example.com/bot)"; // Change this to your company's name and bot homepage!
+            String userAgent = "TicketFinder 1.0 (+http://example.com/bot)"; // Change this to your company's name and bot homepage!
             
             Elements links = Jsoup.connect(google + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
             

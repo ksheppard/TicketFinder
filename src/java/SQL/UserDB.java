@@ -60,7 +60,7 @@ public class UserDB {
 
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("INSERT into Users values ('%s', '%s', false)", email, pass));
+            state.executeUpdate(String.format("INSERT into users (`Email`, `Password`, `IsAdmin`) values ('%s', '%s', false)", email, pass));
 
             state.close();
 
