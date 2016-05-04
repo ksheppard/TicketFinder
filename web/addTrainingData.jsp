@@ -12,6 +12,7 @@
         <title>Add training data</title>
     </head>
     <body>
+        <jsp:include page="Menu.jsp" />
         <h1>Add training data!</h1>
 
         <form action='AddTrainingData.do' method='POST' enctype="multipart/form-data">

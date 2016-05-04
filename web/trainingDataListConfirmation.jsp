@@ -14,6 +14,7 @@
         <title>Confirm Training Data</title>
     </head>
     <body>
+        <jsp:include page="Menu.jsp" />
         <h1>Confirm Training Data</h1>
         
         <form action="addTrainingData.jsp">

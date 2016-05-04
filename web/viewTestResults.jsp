@@ -15,6 +15,7 @@
         <title>JSP Page</title>
     </head>
     <body>
+        <jsp:include page="Menu.jsp" />
         <h1>Test Results</h1>
         <br><br>
         <h4>Individual ticket page results</h4>

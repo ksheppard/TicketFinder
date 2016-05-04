@@ -17,6 +17,7 @@
         <title>JSP Page</title>
     </head>
     <body>
+        <jsp:include page="Menu.jsp" />
         <h1>Confirm Test Data</h1>
         
         <form action="addTestData.jsp">

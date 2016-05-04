@@ -14,7 +14,7 @@
         
     </head>
     <body>
-        <jsp:include page="menu.jsp" />
+        <jsp:include page="Menu.jsp" />
         <jsp:include page="searchForm.jsp" />
     </body>
 </html>

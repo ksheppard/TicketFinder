@@ -95,7 +95,7 @@
         
         <div data-role="page">
             <div data-role="header">
-                <jsp:include page="menu.jsp" />
+                <jsp:include page="Menu.jsp" />
             </div>
 
             <%

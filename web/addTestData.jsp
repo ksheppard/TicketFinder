@@ -12,6 +12,7 @@
         <title>Add Test Data</title>
     </head>
     <body>
+        <jsp:include page="Menu.jsp" />
         <h1>Add test data from file or select existing data from database</h1>
         Select from database: <br>
         <form action='TestDataFromDB.do' method='POST'>

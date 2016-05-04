@@ -12,14 +12,16 @@
         <title>JSP Page</title>
     </head>
     <body>
+        <jsp:include page="Menu.jsp" />
         <%
             boolean success = (boolean) request.getAttribute("success");
             
             if(success){
                
             %>
+            <br>
             <h1 color="green">Training Successful</h1><br><br>
-            Make sure you test the newly created wrapper <a href="addTestData.jsp">here</a>
+            Be sure to test the newly created wrapper <a href="addTestData.jsp">HERE!</a>
         <%
         }
             else{

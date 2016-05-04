@@ -39,7 +39,7 @@
         </style>
     </head>
     <body>
-
+        <jsp:include page="Menu.jsp" />
         <div id="page">
             <div id="maincontent">
                 <div id="firstcontent">firstcontent</div>
