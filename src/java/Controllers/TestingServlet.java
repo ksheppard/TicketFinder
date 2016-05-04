@@ -5,13 +5,16 @@
  */
 package Controllers;
 
+import Models.Enums.FeatureEnum;
 import Models.Structures.SiteFeatures;
+import Models.Structures.TestFeature;
 import Models.Structures.TestResult;
 import Models.Structures.TicketListFeatures;
 import Models.WrapperTester;
 import SQL.TestDataDB;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.RequestDispatcher;
@@ -38,20 +41,22 @@ public class TestingServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        List<SiteFeatures> indTestData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingData");
+        List<SiteFeatures> indTestData = (List<SiteFeatures>) request.getServletContext().getAttribute("trainingIndData");
         List<TestResult> indResults = new ArrayList<>();
-        List<TicketListFeatures> listTestData = (List<TicketListFeatures>) request.getServletContext().getAttribute("listTrainingData");
+        List<TicketListFeatures> listTestData = (List<TicketListFeatures>) request.getServletContext().getAttribute("trainingListData");
         List<TestResult> listResults = new ArrayList<>();
         
         WrapperTester wt = new WrapperTester((Connection) request.getServletContext().getAttribute("connection"));
         
-        if(indTestData.size() > 0){
+        if(indTestData != null && indTestData.size() > 0){
             indResults = wt.performIndTests(indTestData);
         }
-        if(listResults.size() > 0){
+        if(listResults != null && listResults.size() > 0){
             listResults = wt.performListTests(listTestData);
         }
        
+        
+        
         request.getServletContext().setAttribute("indTestResults", indResults);
         request.getServletContext().setAttribute("listTestResults", listResults);
         

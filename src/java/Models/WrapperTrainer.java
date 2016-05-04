@@ -61,8 +61,9 @@ public class WrapperTrainer {
         htmlDocs = new ArrayList<>();
 
         for (int i = 0; i < trainingData.size(); i++) {
-            //wrapperList.add(generateWrapper(siteList.get(i)));
-            wrapperList.add(generateIndWrapper(trainingData.get(i)));
+            Wrapper wrapper = generateIndWrapper(trainingData.get(i));
+            if(wrapper == null) return false;
+            wrapperList.add(wrapper);
         }
         Wrapper wrapper = aggregateWrappers(wrapperList);
         if (wrapper.getRuleList().size() > 0) {
@@ -83,7 +84,9 @@ public class WrapperTrainer {
 
         for (int i = 0; i < trainingData.size(); i++) {
             //wrapperList.add(generateWrapper(siteList.get(i)));
-            wrapperList.add(generateListWrapper(trainingData.get(i)));
+            Wrapper wrapper = generateListWrapper(trainingData.get(i));
+            if(wrapper == null) return false;
+            wrapperList.add(wrapper);
         }
         Wrapper wrapper = aggregateWrappers(wrapperList);
         if (wrapper.getRuleList().size() > 0) {
@@ -101,7 +104,9 @@ public class WrapperTrainer {
             Document doc = Jsoup.connect(feature.getUrl()).get();
             html = doc.body().toString();
             htmlDocs.add(html);
-            wrapper = createIndWrapperFromSearch(searchFileForIndFeatures(feature), feature.getDomain());
+            List<WrapperSearchResult> searchFeatures = searchFileForIndFeatures(feature);
+            if(searchFeatures == null) return null;
+            wrapper = createIndWrapperFromSearch(searchFeatures, feature.getDomain());
         } catch (IOException ex) {
             Logger.getLogger(WrapperHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -116,7 +121,9 @@ public class WrapperTrainer {
             Document doc = Jsoup.connect(feature.getUrl()).get();
             html = doc.body().toString();
             htmlDocs.add(html);
-            wrapper = createListWrapperFromSearch(searchFileForListFeatures(feature), feature.getDomain());
+            ArrayList<ArrayList<WrapperSearchResult>> searchFeatures = searchFileForListFeatures(feature);
+            if(searchFeatures == null) return null;
+            wrapper = createListWrapperFromSearch(searchFeatures, feature.getDomain());
         } catch (IOException ex) {
             Logger.getLogger(WrapperHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -174,6 +181,7 @@ public class WrapperTrainer {
                 }
                 index += value.length();
             }
+            if(tempList.size() == 0) return null;
             searchList.add(tempList);
         }
         return searchList;

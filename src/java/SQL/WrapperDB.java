@@ -34,7 +34,7 @@ public class WrapperDB {
         int id = -1;
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from Wrapper WHERE `Domain` = '%s' AND `Type`= %b", domain, type));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from wrapper WHERE `Domain` = '%s' AND `Type`= %d", domain, type));
             while (rs.next()) {
                 id = rs.getInt("Id");
                 domainVal = rs.getString("Domain").trim();
@@ -62,7 +62,7 @@ public class WrapperDB {
         int id = -1;
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from Wrapper WHERE `Domain` = '%s' AND `Type`= %b", domain, type));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from wrapper WHERE `Domain` = '%s'", domain));
             while (rs.next()) {
                 id = rs.getInt("Id");
                 domainVal = rs.getString("Domain").trim();
@@ -119,10 +119,15 @@ public class WrapperDB {
                     ,wrapper.getDomain(), stringToSQL(wrapper.getHead()), stringToSQL(wrapper.getTail()), wrapper.getType()));
             state.close();
 
+            
+            id = checkDomainExists(wrapper.getDomain(), wrapper.getType());
         } catch (SQLException e) {
             return false;
         }
-        return addRules(wrapper.getDomain(), wrapper.getRuleList(), getWrapper(wrapper.getDomain(), wrapper.getType()).getId());
+        
+        
+        
+        return addRules(wrapper.getDomain(), wrapper.getRuleList(), id);
     }
     
     private String stringToSQL(String string){
@@ -170,7 +175,9 @@ public class WrapperDB {
                         , stringToSQL(rule.getClose()), stringToSQL(rule.getLeft()), stringToSQL(rule.getRight()), id);
                 if(i < ruleList.size() - 1) updateString += ",";
             }
+            System.out.println(updateString);
             state.executeUpdate(updateString);
+            
             state.close();
 
         } catch (SQLException e) {
@@ -184,9 +191,10 @@ public class WrapperDB {
         
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from headtail WHERE `domain` = '%s' AND `type` = %d", domain, type));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from wrapper WHERE `domain` = '%s' AND `type` = %d", domain, type));
             while (rs.next()) {
                 id = rs.getInt("id");
+                break;
             }
             
             state.close();
@@ -202,9 +210,9 @@ public class WrapperDB {
         try {
             Statement state = conn.createStatement();
             state.executeUpdate(String.format(
-                    "DELETE FROM Wrapper WHERE `Id`='%d'", id));
+                    "DELETE FROM wrapper WHERE `Id`='%d'", id));
             state.executeUpdate(String.format(
-                    "DELETE FROM ExtractionRules WHERE `W_Id`='%d'", id));
+                    "DELETE FROM extractionrules WHERE `W_Id`='%d'", id));
             state.close();
 
         } catch (SQLException e) {

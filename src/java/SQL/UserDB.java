@@ -5,6 +5,7 @@
  */
 package SQL;
 
+import Models.Encryptor;
 import Models.Structures.Address;
 import Models.Structures.User;
 import java.sql.Connection;
@@ -13,6 +14,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -34,7 +37,7 @@ public class UserDB {
 
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from users WHERE `Email` = '%s' and `Password` = '%s'", email, pass));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from users WHERE `Email` = '%s' and `Password` = '%s'", Encryptor.encrypt(email), Encryptor.mD5Encryption(pass)));
             while (rs.next()) {
                 //domain is column 1
                 int id = rs.getInt("Id");
@@ -51,6 +54,9 @@ public class UserDB {
         } catch (SQLException e) {
             System.err.println("Error: " + e);
             return null;
+        } catch (Exception ex) {
+            Logger.getLogger(UserDB.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
 
         return user;
@@ -60,13 +66,15 @@ public class UserDB {
 
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("INSERT into users (`Email`, `Password`, `IsAdmin`) values ('%s', '%s', false)", email, pass));
+            state.executeUpdate(String.format("INSERT into users (`Email`, `Password`, `IsAdmin`) values ('%s', '%s', false)",  Encryptor.encrypt(email), Encryptor.mD5Encryption(pass)));
 
             state.close();
 
         } catch (SQLException e) {
             System.err.println("Error: " + e);
             return null;
+        } catch (Exception ex) {
+            Logger.getLogger(UserDB.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         //if adds successfully
@@ -79,13 +87,15 @@ public class UserDB {
     public boolean editUser(User user) {
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("UPDATE users SET Email = %s WHERE Id = %d"
-                    , user.getEmailAddr(), user.getID()));
+            state.executeUpdate(String.format("UPDATE users SET Email = %s WHERE Id = %d", Encryptor.encrypt( user.getEmailAddr()), user.getID()));
 
             state.close();
 
         } catch (SQLException e) {
             System.err.println("Error: " + e);
+            return false;
+        } catch (Exception ex) {
+            Logger.getLogger(UserDB.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
 
@@ -103,8 +113,7 @@ public class UserDB {
     public boolean changePassword(User user, String newPass) {
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("UPDATE users SET Password = %s WHERE Id = %d"
-                    , newPass, user.getID()));
+            state.executeUpdate(String.format("UPDATE users SET Password = %s WHERE Id = %d", Encryptor.mD5Encryption(newPass), user.getID()));
 
             state.close();
 
@@ -123,7 +132,7 @@ public class UserDB {
 
         try {
             Statement state = conn.createStatement();
-            ResultSet rs = state.executeQuery(String.format("SELECT * from users WHERE `Email` = '%s'", email));
+            ResultSet rs = state.executeQuery(String.format("SELECT * from users WHERE `Email` = '%s'", Encryptor.encrypt(email)));
             while (rs.next()) {
                 //domain is column 1
                 exists = true;
@@ -135,6 +144,9 @@ public class UserDB {
 
         } catch (SQLException e) {
             System.err.println("Error: " + e);
+            return false;
+        } catch (Exception ex) {
+            Logger.getLogger(UserDB.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
 
@@ -174,8 +186,7 @@ public class UserDB {
     public boolean addAddress(int id, Address addr) {
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("INSERT into userAddress values (%d, '%s', '%s', '%s', '%s', '%s')"
-                    , id, addr.getAddr1(), addr.getAddr2(), addr.getAddr3(), addr.getAddr4(), addr.getPostcode()));
+            state.executeUpdate(String.format("INSERT into userAddress values (%d, '%s', '%s', '%s', '%s', '%s')", id, addr.getAddr1(), addr.getAddr2(), addr.getAddr3(), addr.getAddr4(), addr.getPostcode()));
 
             state.close();
 
@@ -189,13 +200,12 @@ public class UserDB {
         return true;
 
     }
-    
-    public boolean editAddress(Address addr){
-        
+
+    public boolean editAddress(Address addr) {
+
         try {
             Statement state = conn.createStatement();
-            state.executeUpdate(String.format("UPDATE userAddress SET Addr1 = %s, Addr2 = %s, Addr3 = %s, Addr4 = %s, Postcode = %s, WHERE AddrId = %d"
-                    , addr.getAddr1(), addr.getAddr2(), addr.getAddr3(), addr.getAddr4(), addr.getId()));
+            state.executeUpdate(String.format("UPDATE userAddress SET Addr1 = %s, Addr2 = %s, Addr3 = %s, Addr4 = %s, Postcode = %s, WHERE AddrId = %d", addr.getAddr1(), addr.getAddr2(), addr.getAddr3(), addr.getAddr4(), addr.getId()));
 
             state.close();
 
@@ -209,4 +219,26 @@ public class UserDB {
         return true;
 
     }
+
+    public int getNumOfUsers() {
+        int count = -1;
+
+        try {
+            Statement state = conn.createStatement();
+
+            ResultSet rs = state.executeQuery("SELECT COUNT(*) AS rowcount FROM `users`;");
+            while (rs.next()) {
+                count = rs.getInt("rowcount");
+            }
+            state.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error: " + e);
+            return -1;
+        }
+
+        return count;
+    }
+
+    
 }
